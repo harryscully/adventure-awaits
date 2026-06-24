@@ -4,28 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -45,100 +28,191 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-ring-offset-background: var(--background);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-lavender: var(--lavender);
+  --color-lavender-deep: var(--lavender-deep);
+  --color-seal: var(--seal);
+  --font-hand: var(--font-hand);
+  --font-typewriter: var(--font-typewriter);
+  --font-serif-letter: var(--font-serif-letter);
+  --font-ui: var(--font-ui);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
-}
+  --radius: 0.5rem;
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  /* Warm paper palette */
+  --paper: oklch(0.965 0.025 85);          /* aged cream */
+  --paper-deep: oklch(0.92 0.04 80);       /* darker sepia */
+  --ink: oklch(0.28 0.04 50);              /* deep brown ink */
+  --ink-soft: oklch(0.45 0.04 55);
+  --lavender: oklch(0.72 0.13 305);        /* accent */
+  --lavender-deep: oklch(0.5 0.16 305);
+  --seal: oklch(0.5 0.18 25);              /* wax seal red */
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: oklch(0.985 0.02 85);
+  --card-foreground: var(--ink);
+  --popover: var(--card);
+  --popover-foreground: var(--ink);
+  --primary: var(--lavender-deep);
+  --primary-foreground: oklch(0.99 0.005 85);
+  --secondary: var(--paper-deep);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.94 0.03 82);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--lavender);
+  --accent-foreground: oklch(0.99 0.005 85);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.85 0.04 75);
+  --input: oklch(0.88 0.035 78);
+  --ring: var(--lavender);
+
+  --font-hand: "Caveat", "Comic Sans MS", cursive;
+  --font-typewriter: "Special Elite", "Courier New", monospace;
+  --font-serif-letter: "Cormorant Garamond", Georgia, serif;
+  --font-ui: "Inter", system-ui, sans-serif;
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
-
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-ui);
+    /* subtle paper texture via layered gradients */
+    background-image:
+      radial-gradient(at 15% 20%, oklch(0.93 0.05 70 / 0.6) 0px, transparent 50%),
+      radial-gradient(at 85% 80%, oklch(0.9 0.06 60 / 0.5) 0px, transparent 55%),
+      radial-gradient(at 50% 50%, oklch(0.95 0.03 80 / 0) 0px, transparent 60%);
+    background-attachment: fixed;
   }
 }
+
+/* ---------- Letter / puzzle shared ---------- */
+.paper-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.6) inset,
+    0 10px 30px -15px oklch(0.3 0.04 50 / 0.25),
+    0 2px 6px -2px oklch(0.3 0.04 50 / 0.15);
+  position: relative;
+}
+.paper-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0, transparent 27px, oklch(0.4 0.04 50 / 0.04) 27px, oklch(0.4 0.04 50 / 0.04) 28px);
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+.hand { font-family: var(--font-hand); }
+.typewriter { font-family: var(--font-typewriter); letter-spacing: 0.01em; }
+.letter-serif { font-family: var(--font-serif-letter); }
+
+/* ---------- Envelope ---------- */
+.envelope {
+  background: linear-gradient(180deg, oklch(0.92 0.05 75) 0%, oklch(0.86 0.06 70) 100%);
+  border: 1px solid oklch(0.7 0.05 65);
+  border-radius: 6px;
+  box-shadow: 0 25px 50px -20px oklch(0.3 0.04 50 / 0.4);
+  position: relative;
+  overflow: hidden;
+}
+.envelope-flap {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 60%;
+  background: linear-gradient(180deg, oklch(0.9 0.06 72), oklch(0.82 0.07 68));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition: transform 0.9s cubic-bezier(.6,.05,.3,1);
+  z-index: 2;
+}
+.envelope.open .envelope-flap {
+  transform: rotateX(180deg);
+}
+.wax-seal {
+  position: absolute;
+  top: calc(60% - 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, oklch(0.65 0.2 25), var(--seal) 60%, oklch(0.35 0.15 25));
+  box-shadow: 0 4px 10px oklch(0.3 0.1 25 / 0.5), inset 0 -3px 6px oklch(0.3 0.1 25 / 0.4);
+  display: flex; align-items: center; justify-content: center;
+  color: oklch(0.95 0.05 60);
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+  z-index: 3;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.envelope.open .wax-seal { opacity: 0; transform: translateX(-50%) scale(1.6); }
+
+/* ---------- Snail transition ---------- */
+@keyframes snail-crawl {
+  0%   { transform: translateX(-20%); }
+  100% { transform: translateX(120%); }
+}
+.snail-track { animation: snail-crawl 2.5s ease-in-out forwards; }
+
+@keyframes seal-break {
+  0% { transform: translateX(-50%) scale(1) rotate(0); }
+  60% { transform: translateX(-50%) scale(1.2) rotate(-8deg); }
+  100% { transform: translateX(-50%) scale(0.4) rotate(20deg); opacity: 0; }
+}
+
+/* ---------- Stamp (itinerary) ---------- */
+.stamp {
+  display: inline-block;
+  padding: 0.4rem 0.7rem;
+  border: 2px dashed var(--lavender-deep);
+  color: var(--lavender-deep);
+  background: oklch(0.98 0.02 85);
+  font-family: var(--font-typewriter);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px -2px oklch(0.3 0.1 305 / 0.3);
+}
+.stamp:nth-child(even) { transform: rotate(1.5deg); }
+
+/* ---------- Pin pop ---------- */
+@keyframes pin-drop {
+  0%   { transform: translateY(-40px) scale(0.6); opacity: 0; }
+  60%  { transform: translateY(4px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.pin-drop { animation: pin-drop 0.7s cubic-bezier(.5,1.7,.5,1) both; }
+
+/* ---------- Leaflet overrides ---------- */
+.leaflet-container {
+  background: oklch(0.95 0.04 220) !important;
+  font-family: var(--font-ui) !important;
+}
+
+/* fade-up */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.5s ease-out both; }
+
+/* dodge button */
+.dodge-btn { transition: transform 0.25s cubic-bezier(.5,1.5,.4,1), font-size 0.25s; }
