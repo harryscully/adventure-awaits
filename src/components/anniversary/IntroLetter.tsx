@@ -8,7 +8,19 @@ export function IntroLetter({ onContinue }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-svh px-5 py-10">
       <article className="paper-card max-w-lg w-full p-8 md:p-10 fade-up">
-        <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase mb-4">
+        {/* Frog & Toad — establishes the snail-mail premise before any puzzle */}
+        <figure className="mb-6 flex flex-col items-center">
+          <img
+            src="/frog-toad-letter.png"
+            alt="Frog handing a letter to Snail"
+            className="w-full max-w-xs rounded-lg border-4 border-card shadow-md -rotate-1"
+          />
+          <figcaption className="typewriter text-[11px] tracking-[0.2em] text-ink-soft uppercase mt-3 text-center">
+            Frog hands today's letter to Snail
+          </figcaption>
+        </figure>
+
+        <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase mb-4">
           Frog &middot; today
         </p>
         <div className="letter-serif text-lg md:text-xl text-ink leading-relaxed space-y-4">

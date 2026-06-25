@@ -139,17 +139,7 @@
   position: relative;
   overflow: hidden;
 }
-/* faint diagonal body folds for a closed-envelope read */
-.envelope::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    linear-gradient(48deg, transparent calc(50% - 0.5px), oklch(0.78 0.05 66 / 0.55) 50%, transparent calc(50% + 0.5px)) bottom left / 50% 62% no-repeat,
-    linear-gradient(-48deg, transparent calc(50% - 0.5px), oklch(0.78 0.05 66 / 0.55) 50%, transparent calc(50% + 0.5px)) bottom right / 50% 62% no-repeat;
-}
+
 .envelope-flap {
   position: absolute;
   top: 0; left: 0; right: 0;
