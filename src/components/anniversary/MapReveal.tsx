@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { COPY } from "@/lib/anniversary/constants";
 
-export function MapReveal() {
+interface Props {
+  onReplay?: () => void;
+}
+
+export function MapReveal({ onReplay }: Props) {
   const mapEl = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<1 | 2>(1);
   const [pinsDropped, setPinsDropped] = useState(false);
