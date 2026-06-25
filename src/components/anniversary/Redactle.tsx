@@ -1,160 +1,216 @@
 import { useMemo, useState } from "react";
-import { PUZZLES } from "@/lib/anniversary/constants";
 import { HintButton, type HintRung } from "./HintButton";
 
 interface Props {
   onSolved: (answer: string) => void;
 }
 
-const FILLER = new Set([
-  "A","AN","THE","IS","ARE","WAS","WERE","OF","TO","IN","ON","AT","BY","FOR","WITH",
-  "AND","OR","BUT","IT","ITS","THIS","THAT","AS","FROM","INTO","THAN","SO","NOT","BE",
-  "BEEN","HAS","HAVE","HAD","DO","DOES","DID","CAN","WILL","WOULD","COULD","ALSO",
-]);
+const TITLE = "Lavender";
+const ARTICLE = `Lavender is a flowering plant in the mint family, known for its slender purple spikes and calming fragrance. Native to the Mediterranean, the Middle East, and parts of India, lavender has been cultivated for thousands of years for its oil, its scent, and its beauty. The Romans used lavender in their baths, and the name itself is often traced to a Latin verb meaning to wash. Today vast purple fields of lavender bloom across Provence in France, drawing visitors and photographers every summer. The plant thrives in poor, well-drained soil and full sun, which makes it popular in dry gardens. Bees and butterflies are strongly attracted to its flowers, and beekeepers prize the pale honey that results. Lavender oil is widely used in aromatherapy, soaps, and perfumes, and many people believe its scent helps with relaxation and sleep. The dried flowers keep their colour and fragrance for months, so they are often sewn into small bags and tucked among clothes. There are many species, but English lavender is the most common in gardens, valued for its hardiness and sweet smell. From cooking and baking to medicine and decoration, few plants are as versatile or as instantly recognisable as lavender.`;
+
+const ANSWER = "lavender";
+
+const STOPWORDS = new Set(
+  [
+    "a","an","the","and","or","of","in","to","for","its","it","is","are","was","were",
+    "has","have","their","them","they","with","as","so","but","that","which","from",
+    "every","many","few","most","there",
+  ],
+);
+
+type Token = { kind: "word"; text: string; key: string } | { kind: "punct"; text: string };
+
+function tokenize(s: string): Token[] {
+  const out: Token[] = [];
+  const re = /([A-Za-z']+)|([^A-Za-z']+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s))) {
+    if (m[1]) out.push({ kind: "word", text: m[1], key: m[1].toLowerCase() });
+    else out.push({ kind: "punct", text: m[2] });
+  }
+  return out;
+}
 
 export function Redactle({ onSolved }: Props) {
-  const { paragraph, answer, extraRedacted } = PUZZLES.redactle;
-  const allRedacted = useMemo(() => {
-    const s = new Set<string>([answer.toUpperCase(), ...extraRedacted.map((w) => w.toUpperCase())]);
-    return s;
-  }, [answer, extraRedacted]);
+  const titleTokens = useMemo(() => tokenize(TITLE), []);
+  const bodyTokens = useMemo(() => tokenize(ARTICLE), []);
 
-  const [revealed, setRevealed] = useState<Set<string>>(new Set());
+  // word frequency map (lowercase)
+  const freq = useMemo(() => {
+    const f = new Map<string, number>();
+    for (const t of [...titleTokens, ...bodyTokens]) {
+      if (t.kind === "word") f.set(t.key, (f.get(t.key) ?? 0) + 1);
+    }
+    return f;
+  }, [titleTokens, bodyTokens]);
+
+  const [revealed, setRevealed] = useState<Set<string>>(() => new Set(STOPWORDS));
+  const [guesses, setGuesses] = useState<string[]>([]);
   const [guess, setGuess] = useState("");
-  const [bumped, setBumped] = useState(0);
-  const [firstLetterShown, setFirstLetterShown] = useState(false);
-  const [extraReveal, setExtraReveal] = useState<string | null>(null);
-
-  const tokens = useMemo(() => paragraph.split(/(\s+|[.,;:!?"])/), [paragraph]);
+  const [shake, setShake] = useState(0);
+  const [solved, setSolved] = useState(false);
+  const [titleFirstLetter, setTitleFirstLetter] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const g = guess.trim().toUpperCase();
+    const g = guess.trim().toLowerCase();
     setGuess("");
-    if (!g) return;
-    if (g === answer.toUpperCase()) {
-      onSolved(answer);
+    if (!g || !/^[a-z']+$/.test(g)) {
+      setShake((n) => n + 1);
       return;
     }
-    // Reveal any redacted words that match
-    if (allRedacted.has(g)) {
+    if (!guesses.includes(g)) setGuesses((prev) => [...prev, g]);
+    if (freq.has(g)) {
       setRevealed((prev) => {
         const next = new Set(prev);
         next.add(g);
         return next;
       });
     }
-    setBumped((n) => n + 1);
+    if (g === ANSWER) {
+      setSolved(true);
+      setTimeout(() => onSolved(ANSWER), 1200);
+    }
   }
 
-  function isRedacted(word: string) {
-    const stripped = word.replace(/[^A-Za-z]/g, "").toUpperCase();
-    if (!stripped) return false;
-    if (FILLER.has(stripped)) return false;
-    if (!allRedacted.has(stripped)) return false;
-    if (revealed.has(stripped)) return false;
-    if (stripped === answer.toUpperCase() && firstLetterShown) {
-      return "first-letter";
+  function renderToken(t: Token, i: number, isTitle = false) {
+    if (t.kind === "punct") return <span key={i}>{t.text}</span>;
+    const isRevealed = solved || revealed.has(t.key);
+    if (isRevealed) {
+      return (
+        <span key={i} className={isTitle ? "" : "text-ink"}>
+          {t.text}
+        </span>
+      );
     }
-    return true;
+    // first letter peek for title word
+    if (isTitle && titleFirstLetter && t.key === ANSWER) {
+      return (
+        <span key={i} className="inline-flex items-baseline">
+          <span className="font-semibold">{t.text[0]}</span>
+          <span
+            className="inline-block h-[0.9em] rounded-sm bg-ink mx-[1px] align-middle"
+            style={{ width: `${(t.text.length - 1) * 0.55}em` }}
+          />
+        </span>
+      );
+    }
+    return (
+      <span
+        key={i}
+        className="inline-block align-middle h-[0.95em] rounded-sm bg-ink mx-[1px]"
+        style={{ width: `${Math.max(0.6, t.text.length * 0.55)}em` }}
+        aria-label="redacted"
+      />
+    );
   }
+
+  // Guess table data
+  const tableRows = useMemo(() => {
+    const rows = guesses.map((g) => ({ word: g, count: freq.get(g) ?? 0 }));
+    rows.sort((a, b) => b.count - a.count || a.word.localeCompare(b.word));
+    return rows;
+  }, [guesses, freq]);
 
   const rungs: HintRung[] = [
     {
-      label: "One redacted word",
+      label: "Reveal a word",
       content: (
         <button
           onClick={() => {
-            const remaining = [...allRedacted].filter(
-              (w) => !revealed.has(w) && w !== answer.toUpperCase() && !extraReveal,
+            const remaining = [...freq.keys()].filter(
+              (w) => !revealed.has(w) && w !== ANSWER,
             );
             if (remaining.length) {
-              const pick = remaining[0];
+              const pick = remaining[Math.floor(Math.random() * remaining.length)];
               setRevealed((prev) => new Set(prev).add(pick));
-              setExtraReveal(pick);
             }
           }}
           className="underline decoration-dotted"
         >
-          Reveal one hidden word{extraReveal ? `: ${extraReveal}` : ""}
+          Reveal a random hidden word
         </button>
       ),
     },
     {
-      label: "First letter",
+      label: "Title hint",
       content: (
-        <button
-          onClick={() => setFirstLetterShown(true)}
-          className="underline decoration-dotted"
-        >
-          The subject starts with <b>{answer[0]}</b>
+        <button onClick={() => setTitleFirstLetter(true)} className="underline decoration-dotted">
+          Show the first letter of the title
         </button>
       ),
     },
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
-      <div className="paper-card max-w-lg w-full p-7 text-center fade-up">
-        <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase">
+    <div className="flex flex-col items-center justify-center min-h-[100svh] px-4 py-10">
+      <div className="paper-card max-w-2xl w-full p-6 sm:p-8 fade-up">
+        <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase text-center">
           today's games · #2
         </p>
-        <h2 className="hand text-4xl text-primary mt-1">Redactle</h2>
-        <p className="text-sm text-ink-soft mt-1">
-          Guess words to un-redact the text. Guess the subject to win.
+        <h2 className="hand text-4xl text-primary mt-1 text-center">Redactle</h2>
+        <p className="text-sm text-ink-soft mt-1 text-center">
+          Guess words to un-redact the article. Guess the subject to win.
         </p>
 
-        <p className="letter-serif text-lg text-ink mt-6 leading-relaxed text-left">
-          {tokens.map((t, i) => {
-            const red = isRedacted(t);
-            if (red === true) {
-              return (
-                <span
-                  key={i}
-                  className="inline-block align-middle h-[1em] rounded-sm bg-ink mx-[1px]"
-                  style={{ width: `${Math.max(0.6, t.replace(/[^A-Za-z]/g, "").length * 0.55)}em` }}
-                  aria-label="redacted"
-                />
-              );
-            }
-            if (red === "first-letter") {
-              return (
-                <span key={i} className="inline-block align-middle">
-                  <span className="font-semibold">{t[0]}</span>
-                  <span
-                    className="inline-block h-[1em] rounded-sm bg-ink mx-[1px] align-middle"
-                    style={{ width: `${(t.replace(/[^A-Za-z]/g, "").length - 1) * 0.55}em` }}
-                  />
-                </span>
-              );
-            }
-            return <span key={i}>{t}</span>;
-          })}
+        {/* Title */}
+        <h3 className="letter-serif text-2xl text-ink mt-6 text-center leading-snug">
+          {titleTokens.map((t, i) => renderToken(t, i, true))}
+        </h3>
+
+        {/* Article */}
+        <p className="letter-serif text-base sm:text-lg text-ink mt-4 leading-relaxed text-left">
+          {bodyTokens.map((t, i) => renderToken(t, i))}
         </p>
 
-        <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
+        {/* Input */}
+        <form onSubmit={submit} className="mt-6 flex gap-2">
           <input
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
             placeholder="guess a word"
-            autoCapitalize="characters"
+            autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
-            className="typewriter text-center text-lg py-3 px-4 rounded-md bg-background border-2 border-border focus:border-primary outline-none uppercase tracking-widest"
+            disabled={solved}
+            className={`typewriter flex-1 text-center text-lg py-3 px-4 rounded-md bg-background border-2 border-border focus:border-primary outline-none lowercase tracking-widest ${shake ? "animate-pulse" : ""}`}
+            key={shake}
           />
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow"
+            disabled={solved}
+            className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow disabled:opacity-50"
           >
             Guess
           </button>
         </form>
 
-        {bumped > 0 && (
-          <p className="text-xs text-ink-soft mt-2 typewriter">{bumped} guess{bumped === 1 ? "" : "es"}</p>
+        {/* Guess table */}
+        {tableRows.length > 0 && (
+          <div className="mt-5 border border-border rounded-md overflow-hidden">
+            <div className="grid grid-cols-[1fr_auto] typewriter text-[10px] tracking-widest text-ink-soft uppercase bg-secondary px-3 py-1.5">
+              <span>guess</span>
+              <span>matches</span>
+            </div>
+            <ul className="max-h-48 overflow-y-auto">
+              {tableRows.map((r) => (
+                <li
+                  key={r.word}
+                  className={`grid grid-cols-[1fr_auto] px-3 py-1.5 text-sm typewriter border-t border-border ${r.count === 0 ? "text-ink-soft/60" : "text-ink"}`}
+                >
+                  <span className="tracking-widest">{r.word}</span>
+                  <span>{r.count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
-        <HintButton rungs={rungs} onSkip={() => onSolved(answer)} />
+        {solved && (
+          <p className="mt-4 text-center hand text-2xl text-primary">🎉 Lavender!</p>
+        )}
+
+        <HintButton rungs={rungs} onSkip={() => onSolved(ANSWER)} />
       </div>
     </div>
   );
