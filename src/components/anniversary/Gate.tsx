@@ -37,7 +37,7 @@ export function Gate({ onSolved }: Props) {
   return (
     <div
       ref={containerRef}
-      className="flex flex-col items-center justify-center min-h-[100svh] px-6 py-10 relative"
+      className="flex flex-col items-center justify-center min-h-svh px-6 py-10 relative"
     >
       <div className="paper-card max-w-md w-full p-8 text-center fade-up">
         <p className="hand text-3xl md:text-4xl text-ink leading-snug">

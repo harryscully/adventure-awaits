@@ -9,11 +9,11 @@ interface Props {
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
-  // deterministic-ish shuffle that's definitely not in order
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
+  // make sure it's not accidentally already in the right order
   if (a.every((v, i) => v === FINAL_ORDER[i])) {
     [a[0], a[a.length - 1]] = [a[a.length - 1], a[0]];
   }
@@ -21,84 +21,127 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function Ordering({ onSolved, onBack }: Props) {
-  const [tiles, setTiles] = useState<string[]>(() => shuffle([...FINAL_ORDER]));
+  const [bank, setBank] = useState<string[]>(() => shuffle([...FINAL_ORDER]));
+  const [placed, setPlaced] = useState<string[]>([]);
   const [wrong, setWrong] = useState(false);
   const [solved, setSolved] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
-  function move(i: number, dir: -1 | 1) {
-    const j = i + dir;
-    if (j < 0 || j >= tiles.length) return;
-    setTiles((prev) => {
-      const n = [...prev];
-      [n[i], n[j]] = [n[j], n[i]];
+  const pick = (word: string) => {
+    if (solved) return;
+    setBank((b) => b.filter((w) => w !== word));
+    setPlaced((p) => [...p, word]);
+    setWrong(false);
+  };
+
+  const unplace = (word: string) => {
+    if (solved) return;
+    setPlaced((p) => p.filter((w) => w !== word));
+    setBank((b) => [...b, word]);
+    setWrong(false);
+  };
+
+  const reorder = (from: number, to: number) => {
+    if (from === to) return;
+    setPlaced((p) => {
+      const n = [...p];
+      const [m] = n.splice(from, 1);
+      n.splice(to, 0, m);
       return n;
     });
     setWrong(false);
-  }
+  };
 
-  function submit() {
-    if (tiles.every((v, i) => v === FINAL_ORDER[i])) {
+  const submit = () => {
+    if (placed.length !== FINAL_ORDER.length) return;
+    if (placed.every((v, i) => v === FINAL_ORDER[i])) {
       setSolved(true);
       setTimeout(onSolved, 1800);
     } else {
       setWrong(true);
     }
-  }
+  };
+
+  const full = placed.length === FINAL_ORDER.length;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
+    <div className="flex flex-col items-center justify-center min-h-svh px-5 py-10">
       <BackToMenu onBack={onBack} />
-      <div className="paper-card max-w-md w-full p-7 text-center fade-up">
-        <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase">
+      <div className="paper-card max-w-lg w-full p-7 text-center fade-up">
+        <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase">
           the final puzzle
         </p>
-        <h2 className="hand text-4xl text-primary mt-1">Arrange the words</h2>
-        <p className="letter-serif italic text-base text-ink mt-3">{COPY.ordering.prompt}</p>
-        <p className="text-xs text-ink-soft mt-1 typewriter">{COPY.ordering.sub}</p>
+        <h2 className="hand text-5xl text-primary mt-1">Arrange the words</h2>
+        <p className="letter-serif italic text-lg text-ink mt-3">{COPY.ordering.prompt}</p>
+        <p className="text-sm text-ink-soft mt-1 typewriter">
+          Tap a word to add it · tap it again to send it back · drag to reorder
+        </p>
 
-        <ul className="mt-6 space-y-2">
-          {tiles.map((word, i) => (
-            <li
+        {/* phrase box */}
+        <div
+          className={`mt-6 min-h-22 rounded-xl border-2 border-dashed p-3 flex flex-wrap gap-2 items-center justify-center transition-colors ${
+            solved ? "border-primary bg-primary/10" : "border-border bg-background/60"
+          }`}
+        >
+          {placed.length === 0 && (
+            <span className="letter-serif italic text-base text-ink-soft">
+              your phrase appears here…
+            </span>
+          )}
+          {placed.map((word, i) => (
+            <button
               key={word}
-              className={`flex items-center gap-2 p-3 rounded-lg border-2 ${solved ? "border-primary bg-primary/10" : "border-border bg-background"} transition-colors`}
-              style={solved ? { animation: `fade-up 0.4s ${i * 0.1}s both` } : undefined}
+              draggable={!solved}
+              onDragStart={() => setDragIndex(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (dragIndex !== null) reorder(dragIndex, i);
+                setDragIndex(null);
+              }}
+              onDragEnd={() => setDragIndex(null)}
+              onClick={() => unplace(word)}
+              className={`hand text-2xl tracking-wide px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
+                solved
+                  ? "border-primary bg-primary/15 text-ink"
+                  : "border-primary/50 bg-card text-ink hover:-translate-y-0.5 active:scale-95"
+              } ${dragIndex === i ? "opacity-40" : ""}`}
+              title={solved ? undefined : "Tap to remove · drag to reorder"}
             >
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={() => move(i, -1)}
-                  disabled={i === 0 || solved}
-                  className="w-8 h-7 rounded bg-secondary text-ink-soft text-sm disabled:opacity-30 active:scale-95"
-                  aria-label="Move up"
-                >▲</button>
-                <button
-                  onClick={() => move(i, 1)}
-                  disabled={i === tiles.length - 1 || solved}
-                  className="w-8 h-7 rounded bg-secondary text-ink-soft text-sm disabled:opacity-30 active:scale-95"
-                  aria-label="Move down"
-                >▼</button>
-              </div>
-              <div className="flex-1 hand text-2xl text-ink tracking-wide text-left pl-2">
-                {word}
-              </div>
-              <div className="typewriter text-[10px] tracking-widest text-ink-soft pr-1">
-                #{i + 1}
-              </div>
-            </li>
+              {word}
+            </button>
           ))}
-        </ul>
+        </div>
+
+        {/* word bank */}
+        {!solved && (
+          <div className="mt-4 flex flex-wrap gap-2 justify-center min-h-13">
+            {bank.map((word) => (
+              <button
+                key={word}
+                onClick={() => pick(word)}
+                className="hand text-2xl tracking-wide px-4 py-2 rounded-lg border-2 border-border bg-secondary text-ink hover:-translate-y-0.5 active:scale-95 transition-transform"
+              >
+                {word}
+              </button>
+            ))}
+          </div>
+        )}
 
         {wrong && !solved && (
-          <p className="hand text-xl text-seal mt-4 fade-up">{COPY.ordering.wrong}</p>
+          <p className="hand text-2xl text-seal mt-5 fade-up">{COPY.ordering.wrong}</p>
         )}
 
         {solved ? (
-          <p className="hand text-2xl text-primary mt-5 fade-up">
-            {COPY.ordering.revealed}
-          </p>
+          <p className="hand text-3xl text-primary mt-6 fade-up">{COPY.ordering.revealed}</p>
         ) : (
           <button
             onClick={submit}
-            className="mt-5 px-7 py-3 rounded-full bg-primary text-primary-foreground font-medium shadow"
+            disabled={!full}
+            className={`mt-6 px-7 py-3 rounded-full text-base font-medium shadow transition-transform ${
+              full
+                ? "bg-primary text-primary-foreground hover:scale-105"
+                : "bg-secondary text-ink-soft cursor-not-allowed"
+            }`}
           >
             {COPY.ordering.submit}
           </button>

@@ -21,10 +21,21 @@ type View =
   | "datelock"
   | "reveal";
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function Flow() {
   const [view, setView] = useState<View>("envelope");
   const [activePuzzle, setActivePuzzle] = useState<PuzzleCfg | null>(null);
   const [solved, setSolved] = useState<Record<string, boolean>>({});
+  // Shuffled once for the whole session — stable when returning to the menu.
+  const [menuOrder] = useState<PuzzleCfg[]>(() => shuffle(PUZZLE_LIST));
 
   const openPuzzle = useCallback((p: PuzzleCfg) => {
     setActivePuzzle(p);
@@ -46,6 +57,7 @@ export function Flow() {
   if (view === "menu")
     return (
       <Menu
+        order={menuOrder}
         solved={solved}
         onOpen={openPuzzle}
         onFinal={() => setView("ordering")}

@@ -58,7 +58,7 @@ export function Parseword({
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
+    <div className="flex flex-col items-center justify-center min-h-svh px-5 py-10">
       <BackToMenu onBack={onBack} />
       <div className={`paper-card max-w-md w-full p-7 text-center fade-up ${shake ? "animate-pulse" : ""}`}>
         <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase">
