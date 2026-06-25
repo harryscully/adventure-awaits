@@ -111,7 +111,7 @@ export function Redactle({
         tabIndex={0}
         onClick={() => toggleCount(id)}
         title="click to show letters"
-        className="inline-flex items-center justify-start align-middle h-[1.4em] rounded-[2px] bg-ink/85 text-paper text-[0.72em] font-bold leading-none cursor-pointer select-none mx-px px-1 hover:bg-ink transition-colors"
+        className="inline-flex items-center justify-start align-middle h-[1.4em] rounded-[2px] bg-ink/85 text-paper text-[0.78em] font-bold leading-none cursor-pointer select-none mx-px px-1 hover:bg-ink transition-colors"
         style={{ minWidth: `${Math.max(1, len * 0.62)}em` }}
       >
         {show ? len : ""}
@@ -198,11 +198,11 @@ export function Redactle({
             : "Guess words to un-redact the article. Tap a box to count its letters. Guess the subject to win."}
         </p>
 
-        <h3 className="letter-serif text-2xl text-ink mt-6 text-left leading-loose">
+        <h3 className="font-mono text-xl text-ink mt-6 text-left leading-loose">
           {titleTokens.map((t) => renderToken(t, true))}
         </h3>
 
-        <p className="letter-serif text-base sm:text-lg text-ink mt-4 leading-loose text-left">
+        <p className="font-mono text-sm sm:text-base text-ink mt-4 leading-loose text-left">
           {bodyTokens.map((t) => renderToken(t))}
         </p>
 
