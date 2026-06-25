@@ -40,7 +40,7 @@ export function Envelope({ onSolved }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-svh px-6 py-10">
       <p className="hand text-3xl text-ink-soft mb-7 fade-up">
-        a letter for {COPY.envelope.addressee}
+        A letter for {COPY.envelope.addressee}
       </p>
 
       {/* perspective wrapper — only the envelope tilts */}
