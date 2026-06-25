@@ -139,11 +139,11 @@
   position: relative;
   overflow: hidden;
 }
-
+.leaflet-div-icon { background: transparent; border: none; }
 .envelope-flap {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 52%;
+  height: 50%;   /* was 52% */
   background: linear-gradient(180deg, oklch(0.91 0.055 74), oklch(0.83 0.066 68));
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   transform-origin: top;
@@ -156,16 +156,17 @@
 }
 .wax-seal {
   position: absolute;
-  top: calc(52% - 26px);
+  padding-top: 9px;
+  top: calc(50% - 24px);   /* was calc(52% - 26px) */
+  width: 48px; height: 48px;   /* was 52px */
   left: 50%;
   transform: translateX(-50%);
-  width: 52px; height: 52px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, oklch(0.68 0.2 25), var(--seal) 60%, oklch(0.34 0.15 25));
   box-shadow: 0 4px 10px oklch(0.3 0.1 25 / 0.5), inset 0 -3px 6px oklch(0.3 0.1 25 / 0.45);
   display: flex; align-items: center; justify-content: center;
   color: oklch(0.96 0.05 60);
-  font-family: var(--font-hand);
+  font-family: var(--font-typewriter);
   font-size: 1.6rem;
   z-index: 4;
   transition: opacity 0.4s, transform 0.4s;

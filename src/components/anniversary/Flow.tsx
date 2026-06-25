@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Envelope } from "./Envelope";
 import { Gate } from "./Gate";
 import { IntroLetter } from "./IntroLetter";
@@ -23,6 +23,17 @@ type View =
   | "datelock"
   | "reveal";
 
+// Bump the version suffix to invalidate saved progress (e.g. after changing puzzles).
+const STORAGE_KEY = "frog-toad-progress-v1";
+
+type Saved = {
+  view: View;
+  solved: Record<string, boolean>;
+  delivered: number;
+  activeId: string | null;
+  orderIds: string[];
+};
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -35,11 +46,58 @@ function shuffle<T>(arr: T[]): T[] {
 const TOTAL = PUZZLE_LIST.length;
 
 export function Flow() {
+  const [hydrated, setHydrated] = useState(false);
   const [view, setView] = useState<View>("envelope");
   const [activePuzzle, setActivePuzzle] = useState<PuzzleCfg | null>(null);
   const [solved, setSolved] = useState<Record<string, boolean>>({});
   const [delivered, setDelivered] = useState(0); // snail segments already shown
-  const [menuOrder] = useState<PuzzleCfg[]>(() => shuffle(PUZZLE_LIST));
+  const [menuOrder, setMenuOrder] = useState<PuzzleCfg[]>(() => shuffle(PUZZLE_LIST));
+
+  // Restore saved progress once, on the client, after hydration.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw) as Partial<Saved>;
+        if (s.solved) setSolved(s.solved);
+        if (typeof s.delivered === "number") setDelivered(s.delivered);
+        if (Array.isArray(s.orderIds) && s.orderIds.length) {
+          const byId = new Map(PUZZLE_LIST.map((p) => [p.id, p]));
+          const restored = s.orderIds
+            .map((id) => byId.get(id))
+            .filter((p): p is PuzzleCfg => !!p);
+          if (restored.length === PUZZLE_LIST.length) setMenuOrder(restored);
+        }
+        if (s.activeId) {
+          setActivePuzzle(PUZZLE_LIST.find((x) => x.id === s.activeId) ?? null);
+        }
+        // Don't resume mid-puzzle or mid-animation — fall back to the menu.
+        let v: View = s.view ?? "envelope";
+        if (v === "puzzle" || v === "snail") v = "menu";
+        setView(v);
+      }
+    } catch {
+      /* ignore unreadable/corrupt storage */
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist durable progress whenever it changes.
+  useEffect(() => {
+    if (!hydrated) return;
+    const data: Saved = {
+      view,
+      solved,
+      delivered,
+      activeId: activePuzzle?.id ?? null,
+      orderIds: menuOrder.map((p) => p.id),
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      /* storage unavailable / full */
+    }
+  }, [hydrated, view, solved, delivered, activePuzzle, menuOrder]);
 
   const openPuzzle = useCallback((p: PuzzleCfg) => {
     setActivePuzzle(p);
@@ -56,6 +114,8 @@ export function Flow() {
     const solvedCount = PUZZLE_LIST.filter((p) => solved[p.id]).length;
     setView(solvedCount > delivered ? "snail" : "menu");
   }, [solved, delivered]);
+
+  if (!hydrated) return null; // brief blank before restore; avoids SSR mismatch
 
   if (view === "envelope") return <Envelope onSolved={() => setView("gate")} />;
   if (view === "gate") return <Gate onSolved={() => setView("intro")} />;

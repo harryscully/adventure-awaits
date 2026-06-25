@@ -13,14 +13,12 @@ export function MapReveal({ onReplay }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    let map: ReturnType<typeof initMap> extends Promise<infer T> ? T : never;
 
     async function initMap() {
       const L = await import("leaflet");
       if (cancelled || !mapEl.current) return null;
 
       const { durham, paris } = COPY.origin;
-      const { hitchin, lussmans } = COPY.pins;
 
       const m = L.map(mapEl.current, {
         zoomControl: false,
@@ -32,36 +30,34 @@ export function MapReveal({ onReplay }: Props) {
         keyboard: false,
       });
 
-      L.tileLayer(
-        "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-        { maxZoom: 19, subdomains: "abc" },
-      ).addTo(m);
+      L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        subdomains: "abc",
+      }).addTo(m);
 
       // Stage 1: fit Durham + Paris with a dashed arc.
       const bounds = L.latLngBounds([durham.lat, durham.lng], [paris.lat, paris.lng]);
       m.fitBounds(bounds.pad(0.4), { animate: false });
 
-      // Dashed great-circle-ish line
       const arc = L.polyline(
         [
           [durham.lat, durham.lng],
           [(durham.lat + paris.lat) / 2 - 1.5, (durham.lng + paris.lng) / 2],
           [paris.lat, paris.lng],
         ],
-        {
-          color: "#7a5c9e",
-          weight: 2,
-          dashArray: "6 8",
-          opacity: 0.85,
-        },
+        { color: "#7a5c9e", weight: 2, dashArray: "6 8", opacity: 0.85 },
       ).addTo(m);
 
+      // A labelled pin: a dot sits on the exact point, the label floats above it.
       const labelIcon = (text: string) =>
         L.divIcon({
           className: "",
-          html: `<div style="background:#fffaf0;border:1px solid #c8b18a;padding:4px 8px;border-radius:999px;font-family:'Caveat',cursive;font-size:18px;color:#3b2a1a;box-shadow:0 4px 10px -4px rgba(0,0,0,.3);white-space:nowrap;">${text}</div>`,
-          iconSize: [10, 10],
-          iconAnchor: [5, 5],
+          html: `<div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;white-space:nowrap;">
+              <div style="background:#fffaf0;border:1px solid #c8b18a;padding:3px 10px;border-radius:999px;font-family:'Caveat',cursive;font-size:18px;line-height:1.15;color:#3b2a1a;box-shadow:0 4px 10px -4px rgba(0,0,0,.35);">${text}</div>
+              <div style="width:11px;height:11px;border-radius:50%;background:#7a5c9e;border:2px solid #fffaf0;box-shadow:0 2px 4px rgba(0,0,0,.35);margin-top:1px;"></div>
+            </div>`,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
         });
 
       L.marker([durham.lat, durham.lng], { icon: labelIcon("✉️ Durham") }).addTo(m);
@@ -83,16 +79,15 @@ export function MapReveal({ onReplay }: Props) {
     setStage(2);
     const ref = mapRef.current as
       | {
-        L: typeof import("leaflet");
-        m: import("leaflet").Map;
-        arc: import("leaflet").Polyline;
-      }
+          L: typeof import("leaflet");
+          m: import("leaflet").Map;
+          arc: import("leaflet").Polyline;
+        }
       | null;
     if (!ref) return;
     const { L, m, arc } = ref;
     const { hitchin, lussmans } = COPY.pins;
 
-    // Remove arc, fly down
     m.removeLayer(arc);
     const midLat = (hitchin.lat + lussmans.lat) / 2;
     const midLng = (hitchin.lng + lussmans.lng) / 2;
@@ -155,7 +150,7 @@ export function MapReveal({ onReplay }: Props) {
           <div className="paper-card p-4 flex items-center gap-4 pin-drop">
             <div className="text-3xl">{hitchin.emoji}</div>
             <div className="flex-1 text-left">
-              <p className="typewriter text-[10px] tracking-widest uppercase text-ink-soft">
+              <p className="typewriter text-xs tracking-widest uppercase text-ink-soft">
                 {hitchin.time}
               </p>
               <p className="hand text-2xl text-primary leading-none">{hitchin.label}</p>
@@ -169,7 +164,7 @@ export function MapReveal({ onReplay }: Props) {
           >
             <div className="text-3xl">{lussmans.emoji}</div>
             <div className="flex-1 text-left">
-              <p className="typewriter text-[10px] tracking-widest uppercase text-ink-soft">
+              <p className="typewriter text-xs tracking-widest uppercase text-ink-soft">
                 {lussmans.time}
               </p>
               <p className="hand text-2xl text-primary leading-none">{lussmans.label}</p>
@@ -178,7 +173,7 @@ export function MapReveal({ onReplay }: Props) {
           </div>
 
           <article className="paper-card p-6 mt-4 text-center">
-            <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase mb-3">
+            <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase mb-3">
               p.s. from Frog
             </p>
             <div className="letter-serif text-lg text-ink space-y-2">
@@ -198,6 +193,10 @@ export function MapReveal({ onReplay }: Props) {
           )}
         </div>
       )}
+
+      <p className="typewriter text-[11px] tracking-widest text-ink-soft uppercase mt-8">
+        map · © openstreetmap contributors
+      </p>
     </div>
   );
 }

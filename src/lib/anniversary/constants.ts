@@ -15,11 +15,11 @@ export const COPY = {
     noVariants: ["No", "Nope", "Are you sure?", "Try again", "…fine, yes"],
   },
   introLetter: [
-    "Dearest Toad,",
-    "Four years. Four whole years of you.",
-    "Before I tell you where we're going today, you have to do what we always do first — play today's games.",
-    "I've rigged them. Solve all five and you'll have the words to arrange the day.",
-    "Yours, always —",
+    "Dearest Toad 🐸,",
+    "Four years! Can you believe it!",
+    "Before I tell you where we're going today, you have to do what we always do first - play today's games.",
+    "Don't worry, I've rigged them. Solve all five and you'll have the words to arrange the day.",
+    "Yours, always ",
     "Frog 🐸",
   ],
   menu: {
@@ -49,12 +49,16 @@ export const COPY = {
   },
   map: {
     stage1Caption:
-      "Once upon a sea, a Frog in Durham wrote to a Toad in Paris. Letters across the Channel, week after week.",
+      `Once upon a time,
+      
+      a Frog in Durham 
+      wrote to a Toad in Paris...`,
     stage2Caption:
-      "Today, four years on, the letters meet in the middle. Here is your day, Toad.",
+      `...four years on, 
+      here is our day today, Toad.`,
     closing: [
       "Happy four years, my Toad.",
-      "From the Channel, to here. — Frog 🐸",
+      "- Frog 🐸",
     ],
     replay: "View the puzzles again",
   },
