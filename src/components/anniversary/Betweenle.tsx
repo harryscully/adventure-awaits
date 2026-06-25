@@ -40,7 +40,6 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
   const [solved, setSolved] = useState(initialSolved);
   const [error, setError] = useState("");
   const [shake, setShake] = useState(0);
-  const [struck, setStruck] = useState<Set<string>>(new Set());
   const [showFirst, setShowFirst] = useState(false);
   const [showLength, setShowLength] = useState(false);
 
@@ -59,6 +58,28 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
   const bottomDist = dist(val(upperWord), answerVal);
   const denom = topDist + bottomDist;
   const dotFrac = denom === 0 ? 0.5 : topDist / denom; // 0 = at top row, 1 = at bottom row
+  const hasGuess = guesses.length > 0;
+
+  // Letters still possible at the position currently being typed, given the
+  // narrowing bounds (lowerWord < answer < upperWord) and the prefix typed so far.
+  // A position stays bounded by a guess letter only while the typed prefix still
+  // matches that guess exactly (lexicographic "tightness").
+  const allowedSet = useMemo<Set<string> | null>(() => {
+    if (solved) return null;
+    const pos = letters.findIndex((l) => l === "");
+    if (pos === -1) return null; // word complete — no active constraint
+    let lowTight = true;
+    let highTight = true;
+    for (let k = 0; k < pos; k++) {
+      if (letters[k] !== lowerWord[k]) lowTight = false;
+      if (letters[k] !== upperWord[k]) highTight = false;
+    }
+    const lo = (lowTight ? lowerWord[pos] : "a").charCodeAt(0);
+    const hi = (highTight ? upperWord[pos] : "z").charCodeAt(0);
+    const set = new Set<string>();
+    for (let c = lo; c <= hi; c++) set.add(String.fromCharCode(c).toUpperCase());
+    return set;
+  }, [letters, lowerWord, upperWord, solved]);
 
   const lastGuess = guesses[guesses.length - 1];
   const lastRel: "below" | "above" | "match" | null = !lastGuess
@@ -133,14 +154,6 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [solved, submit, backspace, press]);
-
-  const toggleStrike = (ch: string) =>
-    setStruck((prev) => {
-      const next = new Set(prev);
-      if (next.has(ch)) next.delete(ch);
-      else next.add(ch);
-      return next;
-    });
 
   const rungs: HintRung[] = [
     {
@@ -227,20 +240,26 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
 
         {/* board: left rail (tags + dot) + three rows */}
         <div className="relative mt-6">
-          {/* left rail */}
+          {/* left rail — tags + dot only appear after the first guess */}
           <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col items-center">
-            <div className="typewriter text-[11px] font-semibold text-ink bg-secondary rounded px-1.5 py-0.5 border border-border">
-              {topDist}
-            </div>
+            {hasGuess && (
+              <div className="typewriter text-[11px] font-semibold text-ink bg-secondary rounded px-1.5 py-0.5 border border-border">
+                {topDist}
+              </div>
+            )}
             <div className="relative flex-1 w-px my-1 bg-border">
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-orange-500 border-2 border-background shadow"
-                style={{ top: `${dotFrac * 100}%` }}
-              />
+              {hasGuess && (
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-orange-500 border-2 border-background shadow"
+                  style={{ top: `${dotFrac * 100}%` }}
+                />
+              )}
             </div>
-            <div className="typewriter text-[11px] font-semibold text-ink bg-secondary rounded px-1.5 py-0.5 border border-border">
-              {bottomDist}
-            </div>
+            {hasGuess && (
+              <div className="typewriter text-[11px] font-semibold text-ink bg-secondary rounded px-1.5 py-0.5 border border-border">
+                {bottomDist}
+              </div>
+            )}
           </div>
 
           {/* rows */}
@@ -272,22 +291,29 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
           </p>
         )}
 
-        {/* A–Z scratchpad */}
+        {/* available letters for the position currently being typed */}
         {!solved && (
-          <div className="mt-5 flex flex-wrap gap-1 justify-center">
-            {ALPHABET.map((ch) => (
-              <button
-                key={ch}
-                onClick={() => toggleStrike(ch)}
-                className={`typewriter w-6 h-6 text-xs rounded-full border transition-colors ${
-                  struck.has(ch)
-                    ? "text-ink-soft/40 line-through bg-transparent border-transparent"
-                    : "text-ink bg-secondary border-border"
-                }`}
-              >
-                {ch}
-              </button>
-            ))}
+          <div className="mt-5">
+            <p className="typewriter text-[11px] tracking-widest text-ink-soft uppercase mb-1.5">
+              possible next letter
+            </p>
+            <div className="flex flex-wrap gap-1 justify-center">
+              {ALPHABET.map((ch) => {
+                const on = !allowedSet || allowedSet.has(ch);
+                return (
+                  <span
+                    key={ch}
+                    className={`typewriter w-6 h-6 flex items-center justify-center text-xs rounded-full border transition-colors ${
+                      on
+                        ? "text-primary-foreground bg-primary border-primary"
+                        : "text-ink-soft/30 bg-transparent border-transparent"
+                    }`}
+                  >
+                    {ch}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         )}
 

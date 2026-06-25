@@ -18,22 +18,34 @@ const STOPWORDS = new Set([
   "every","many","few","most","there","by","on","at","be","been","than","also",
 ]);
 
-type Token = { kind: "word"; text: string; key: string } | { kind: "punct"; text: string };
+type Token =
+  | { kind: "word"; text: string; key: string; id: string }
+  | { kind: "punct"; text: string; id: string };
 
-function tokenize(s: string): Token[] {
+function tokenize(s: string, prefix: string): Token[] {
   const out: Token[] = [];
   const re = /([A-Za-z']+)|([^A-Za-z']+)/g;
   let m: RegExpExecArray | null;
+  let i = 0;
   while ((m = re.exec(s))) {
-    if (m[1]) out.push({ kind: "word", text: m[1], key: m[1].toLowerCase() });
-    else out.push({ kind: "punct", text: m[2] });
+    const id = `${prefix}${i++}`;
+    if (m[1]) out.push({ kind: "word", text: m[1], key: m[1].toLowerCase(), id });
+    else out.push({ kind: "punct", text: m[2], id });
   }
   return out;
 }
 
-export function Redactle({ number, title, article, answer, initialSolved, onSolved, onBack }: Props) {
-  const titleTokens = useMemo(() => tokenize(title), [title]);
-  const bodyTokens = useMemo(() => tokenize(article), [article]);
+export function Redactle({
+  number,
+  title,
+  article,
+  answer,
+  initialSolved,
+  onSolved,
+  onBack,
+}: Props) {
+  const titleTokens = useMemo(() => tokenize(title, "t"), [title]);
+  const bodyTokens = useMemo(() => tokenize(article, "b"), [article]);
 
   const freq = useMemo(() => {
     const f = new Map<string, number>();
@@ -52,6 +64,17 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
   const [shake, setShake] = useState(0);
   const [solved, setSolved] = useState(initialSolved);
   const [titleFirstLetter, setTitleFirstLetter] = useState(false);
+  // ids of redaction boxes whose letter-count is currently shown
+  const [counted, setCounted] = useState<Set<string>>(new Set());
+
+  function toggleCount(id: string) {
+    setCounted((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,11 +86,7 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
     }
     if (!guesses.includes(g)) setGuesses((prev) => [...prev, g]);
     if (freq.has(g)) {
-      setRevealed((prev) => {
-        const next = new Set(prev);
-        next.add(g);
-        return next;
-      });
+      setRevealed((prev) => new Set(prev).add(g));
     }
     if (g === answer) {
       setRevealed(new Set(freq.keys()));
@@ -76,42 +95,61 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
     }
   }
 
-  function renderToken(t: Token, i: number, isTitle = false) {
-    if (t.kind === "punct") return <span key={i}>{t.text}</span>;
+  function Box({
+    len,
+    id,
+    forceCount,
+  }: {
+    len: number;
+    id: string;
+    forceCount?: boolean;
+  }) {
+    const show = forceCount || counted.has(id);
+    return (
+      <span
+        role="button"
+        tabIndex={0}
+        onClick={() => toggleCount(id)}
+        title="click to show letters"
+        className="inline-flex items-center justify-center align-middle h-[1.05em] rounded-[2px] bg-ink/85 text-paper text-[0.62em] font-bold tracking-tighter cursor-pointer select-none mx-px hover:bg-ink transition-colors"
+        style={{ minWidth: `${Math.max(0.85, len * 0.6)}em` }}
+      >
+        {show ? len : ""}
+      </span>
+    );
+  }
+
+  function renderToken(t: Token, isTitle = false) {
+    if (t.kind === "punct") return <span key={t.id}>{t.text}</span>;
     const isRevealed = solved || revealed.has(t.key);
     if (isRevealed) {
       return (
-        <span key={i} className={isTitle ? "" : "text-ink"}>
+        <span key={t.id} className={isTitle ? "" : "text-ink"}>
           {t.text}
         </span>
       );
     }
+    // title hint: show first letter of the subject + a box for the rest
     if (isTitle && titleFirstLetter && t.key === answer) {
       return (
-        <span key={i} className="inline-flex items-baseline">
-          <span className="font-semibold">{t.text[0]}</span>
-          <span
-            className="inline-block h-[0.9em] rounded-sm bg-ink mx-[1px] align-middle"
-            style={{ width: `${(t.text.length - 1) * 0.55}em` }}
-          />
+        <span key={t.id} className="inline-flex items-baseline">
+          <span className="font-semibold">{t.text[0].toUpperCase()}</span>
+          <Box len={t.text.length - 1} id={t.id} forceCount={isTitle} />
         </span>
       );
     }
-    return (
-      <span
-        key={i}
-        className="inline-block align-middle h-[0.95em] rounded-sm bg-ink mx-[1px]"
-        style={{ width: `${Math.max(0.6, t.text.length * 0.55)}em` }}
-        aria-label="redacted"
-      />
-    );
+    // title boxes always show their letter count; body boxes show on click
+    return <Box key={t.id} len={t.text.length} id={t.id} forceCount={isTitle} />;
   }
 
-  const tableRows = useMemo(() => {
-    const rows = guesses.map((g) => ({ word: g, count: freq.get(g) ?? 0 }));
-    rows.sort((a, b) => b.count - a.count || a.word.localeCompare(b.word));
-    return rows;
-  }, [guesses, freq]);
+  // most-recent guess first, with its number and match count
+  const tableRows = useMemo(
+    () =>
+      guesses
+        .map((g, idx) => ({ word: g, count: freq.get(g) ?? 0, n: idx + 1 }))
+        .reverse(),
+    [guesses, freq],
+  );
 
   const rungs: HintRung[] = [
     {
@@ -136,7 +174,10 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
     {
       label: "Title hint",
       content: (
-        <button onClick={() => setTitleFirstLetter(true)} className="underline decoration-dotted">
+        <button
+          onClick={() => setTitleFirstLetter(true)}
+          className="underline decoration-dotted"
+        >
           Show the first letter of the title
         </button>
       ),
@@ -144,23 +185,25 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-4 py-10">
+    <div className="flex flex-col items-center justify-center min-h-svh px-4 py-10">
       <BackToMenu onBack={onBack} />
       <div className="paper-card max-w-2xl w-full p-6 sm:p-8 fade-up">
-        <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase text-center">
+        <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase text-center">
           today's games · #{number}
         </p>
         <h2 className="hand text-4xl text-primary mt-1 text-center">Redactle</h2>
         <p className="text-sm text-ink-soft mt-1 text-center">
-          {solved ? "Solved — the article is revealed." : "Guess words to un-redact the article. Guess the subject to win."}
+          {solved
+            ? "Solved — the article is revealed."
+            : "Guess words to un-redact the article. Tap a box to count its letters. Guess the subject to win."}
         </p>
 
         <h3 className="letter-serif text-2xl text-ink mt-6 text-center leading-snug">
-          {titleTokens.map((t, i) => renderToken(t, i, true))}
+          {titleTokens.map((t) => renderToken(t, true))}
         </h3>
 
         <p className="letter-serif text-base sm:text-lg text-ink mt-4 leading-relaxed text-left">
-          {bodyTokens.map((t, i) => renderToken(t, i))}
+          {bodyTokens.map((t) => renderToken(t))}
         </p>
 
         {!solved && (
@@ -168,7 +211,7 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
             <input
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
-              placeholder="guess a word"
+              placeholder="enter a word"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
@@ -186,18 +229,20 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
 
         {!solved && tableRows.length > 0 && (
           <div className="mt-5 border border-border rounded-md overflow-hidden">
-            <div className="grid grid-cols-[1fr_auto] typewriter text-[10px] tracking-widest text-ink-soft uppercase bg-secondary px-3 py-1.5">
+            <div className="grid grid-cols-[auto_1fr_auto] gap-3 typewriter text-xs tracking-widest text-ink-soft uppercase bg-secondary px-3 py-1.5">
+              <span>#</span>
               <span>guess</span>
               <span>matches</span>
             </div>
-            <ul className="max-h-48 overflow-y-auto">
+            <ul className="max-h-52 overflow-y-auto">
               {tableRows.map((r) => (
                 <li
                   key={r.word}
-                  className={`grid grid-cols-[1fr_auto] px-3 py-1.5 text-sm typewriter border-t border-border ${r.count === 0 ? "text-ink-soft/60" : "text-ink"}`}
+                  className={`grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-1.5 text-base typewriter border-t border-border ${r.count === 0 ? "text-ink-soft/60" : "text-ink"}`}
                 >
+                  <span className="text-ink-soft">{r.n}</span>
                   <span className="tracking-widest">{r.word}</span>
-                  <span>{r.count}</span>
+                  <span className="font-semibold">{r.count}</span>
                 </li>
               ))}
             </ul>
@@ -205,10 +250,21 @@ export function Redactle({ number, title, article, answer, initialSolved, onSolv
         )}
 
         {solved && (
-          <p className="mt-4 text-center hand text-2xl text-primary">🎉 {answer.toUpperCase()}!</p>
+          <p className="mt-4 text-center hand text-2xl text-primary">
+            🎉 {answer.toUpperCase()}!
+          </p>
         )}
 
-        {!solved && <HintButton rungs={rungs} onSkip={() => { setSolved(true); setRevealed(new Set(freq.keys())); onSolved(); }} />}
+        {!solved && (
+          <HintButton
+            rungs={rungs}
+            onSkip={() => {
+              setSolved(true);
+              setRevealed(new Set(freq.keys()));
+              onSolved();
+            }}
+          />
+        )}
       </div>
     </div>
   );

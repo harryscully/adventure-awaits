@@ -29,7 +29,7 @@ export function Envelope({ onSolved }: Props) {
         <div className="wax-seal">{COPY.envelope.sealLetter}</div>
 
         {/* address sits in the lower body, clear of the flap tip and seal */}
-        <div className="absolute inset-x-0 bottom-[14%] z-2 flex flex-col items-center px-4 pointer-events-none">
+        <div className="absolute inset-x-0 bottom-[14%] z-2] flex flex-col items-center px-4 pointer-events-none">
           <div className="hand text-4xl text-ink leading-none">
             {COPY.envelope.addressee}
           </div>

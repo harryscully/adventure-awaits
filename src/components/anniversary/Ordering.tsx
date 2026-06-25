@@ -65,13 +65,14 @@ export function Ordering({ onSolved, onBack }: Props) {
   const full = placed.length === FINAL_ORDER.length;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh px-5 py-10">
+    <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
       <BackToMenu onBack={onBack} />
       <div className="paper-card max-w-lg w-full p-7 text-center fade-up">
         <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase">
           the final puzzle
         </p>
         <h2 className="hand text-5xl text-primary mt-1">Arrange the words</h2>
+        <p className="hand text-2xl text-ink mt-1">📬 All five words have been delivered!</p>
         <p className="letter-serif italic text-lg text-ink mt-3">{COPY.ordering.prompt}</p>
         <p className="text-sm text-ink-soft mt-1 typewriter">
           Tap a word to add it · tap it again to send it back · drag to reorder
@@ -79,7 +80,7 @@ export function Ordering({ onSolved, onBack }: Props) {
 
         {/* phrase box */}
         <div
-          className={`mt-6 min-h-22 rounded-xl border-2 border-dashed p-3 flex flex-wrap gap-2 items-center justify-center transition-colors ${
+          className={`mt-6 min-h-[88px] rounded-xl border-2 border-dashed p-3 flex flex-wrap gap-2 items-center justify-center transition-colors ${
             solved ? "border-primary bg-primary/10" : "border-border bg-background/60"
           }`}
         >
@@ -114,7 +115,7 @@ export function Ordering({ onSolved, onBack }: Props) {
 
         {/* word bank */}
         {!solved && (
-          <div className="mt-4 flex flex-wrap gap-2 justify-center min-h-13">
+          <div className="mt-4 flex flex-wrap gap-2 justify-center min-h-[52px]">
             {bank.map((word) => (
               <button
                 key={word}

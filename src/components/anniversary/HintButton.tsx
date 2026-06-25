@@ -12,7 +12,7 @@ interface Props {
 
 export function HintButton({ rungs, onSkip }: Props) {
   const [open, setOpen] = useState(false);
-  const [revealed, setRevealed] = useState(0);
+  const [revealed, setRevealed] = useState(1);
 
   return (
     <div className="mt-6">

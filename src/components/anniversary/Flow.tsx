@@ -6,6 +6,7 @@ import { Menu } from "./Menu";
 import { Parseword } from "./Parseword";
 import { Redactle } from "./Redactle";
 import { Betweenle } from "./Betweenle";
+import { SnailTransition } from "./SnailTransition";
 import { Ordering } from "./Ordering";
 import { DateLock } from "./DateLock";
 import { MapReveal } from "./MapReveal";
@@ -17,6 +18,7 @@ type View =
   | "intro"
   | "menu"
   | "puzzle"
+  | "snail"
   | "ordering"
   | "datelock"
   | "reveal";
@@ -30,11 +32,13 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+const TOTAL = PUZZLE_LIST.length;
+
 export function Flow() {
   const [view, setView] = useState<View>("envelope");
   const [activePuzzle, setActivePuzzle] = useState<PuzzleCfg | null>(null);
   const [solved, setSolved] = useState<Record<string, boolean>>({});
-  // Shuffled once for the whole session — stable when returning to the menu.
+  const [delivered, setDelivered] = useState(0); // snail segments already shown
   const [menuOrder] = useState<PuzzleCfg[]>(() => shuffle(PUZZLE_LIST));
 
   const openPuzzle = useCallback((p: PuzzleCfg) => {
@@ -46,10 +50,12 @@ export function Flow() {
     setSolved((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
   }, []);
 
+  // Returning to the menu: if a NEW word was just solved, let Snail deliver it first.
   const backToMenu = useCallback(() => {
     setActivePuzzle(null);
-    setView("menu");
-  }, []);
+    const solvedCount = PUZZLE_LIST.filter((p) => solved[p.id]).length;
+    setView(solvedCount > delivered ? "snail" : "menu");
+  }, [solved, delivered]);
 
   if (view === "envelope") return <Envelope onSolved={() => setView("gate")} />;
   if (view === "gate") return <Gate onSolved={() => setView("intro")} />;
@@ -63,8 +69,21 @@ export function Flow() {
         onFinal={() => setView("ordering")}
       />
     );
+  if (view === "snail")
+    return (
+      <SnailTransition
+        fromPct={(delivered / TOTAL) * 100}
+        toPct={((delivered + 1) / TOTAL) * 100}
+        delivered={delivered + 1}
+        total={TOTAL}
+        onDone={() => {
+          setDelivered((d) => d + 1);
+          setView("menu");
+        }}
+      />
+    );
   if (view === "ordering")
-    return <Ordering onSolved={() => setView("datelock")} onBack={backToMenu} />;
+    return <Ordering onSolved={() => setView("datelock")} onBack={() => setView("menu")} />;
   if (view === "datelock") return <DateLock onSolved={() => setView("reveal")} />;
   if (view === "reveal") return <MapReveal onReplay={() => setView("menu")} />;
 

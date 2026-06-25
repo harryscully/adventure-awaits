@@ -64,12 +64,6 @@ export function Gate({ onSolved }: Props) {
             {label}
           </button>
         </div>
-
-        {dodgeCount > 0 && !surrendered && (
-          <p className="typewriter text-xs text-ink-soft mt-6 tracking-widest uppercase">
-            Snail is hiding the button
-          </p>
-        )}
       </div>
     </div>
   );

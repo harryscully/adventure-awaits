@@ -33,8 +33,8 @@ export function MapReveal({ onReplay }: Props) {
       });
 
       L.tileLayer(
-        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-        { maxZoom: 19 },
+        "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+        { maxZoom: 19, subdomains: "abc" },
       ).addTo(m);
 
       // Stage 1: fit Durham + Paris with a dashed arc.
@@ -83,10 +83,10 @@ export function MapReveal({ onReplay }: Props) {
     setStage(2);
     const ref = mapRef.current as
       | {
-          L: typeof import("leaflet");
-          m: import("leaflet").Map;
-          arc: import("leaflet").Polyline;
-        }
+        L: typeof import("leaflet");
+        m: import("leaflet").Map;
+        arc: import("leaflet").Polyline;
+      }
       | null;
     if (!ref) return;
     const { L, m, arc } = ref;
@@ -129,7 +129,7 @@ export function MapReveal({ onReplay }: Props) {
   const { hitchin, lussmans } = COPY.pins;
 
   return (
-    <div className="min-h-[100svh] px-4 py-6 flex flex-col items-center">
+    <div className="min-h-svh px-4 py-6 flex flex-col items-center">
       <p className="hand text-3xl md:text-4xl text-ink text-center fade-up max-w-xl">
         {stage === 1 ? COPY.map.stage1Caption : COPY.map.stage2Caption}
       </p>
@@ -137,7 +137,7 @@ export function MapReveal({ onReplay }: Props) {
       <div className="mt-5 w-full max-w-2xl">
         <div
           ref={mapEl}
-          className="w-full h-[55vh] min-h-[360px] rounded-2xl overflow-hidden border border-border shadow-xl"
+          className="w-full h-[55vh] min-h-90 rounded-2xl overflow-hidden border border-border shadow-xl"
         />
       </div>
 
@@ -198,10 +198,6 @@ export function MapReveal({ onReplay }: Props) {
           )}
         </div>
       )}
-
-      <p className="typewriter text-[9px] tracking-widest text-ink-soft uppercase mt-8">
-        map · © openstreetmap contributors
-      </p>
     </div>
   );
 }

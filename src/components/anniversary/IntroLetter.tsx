@@ -6,7 +6,7 @@ interface Props {
 
 export function IntroLetter({ onContinue }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
+    <div className="flex flex-col items-center justify-center min-h-svh px-5 py-10">
       <article className="paper-card max-w-lg w-full p-8 md:p-10 fade-up">
         <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase mb-4">
           Frog &middot; today
