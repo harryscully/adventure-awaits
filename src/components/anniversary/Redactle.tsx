@@ -18,6 +18,24 @@ const STOPWORDS = new Set([
   "every","many","few","most","there","by","on","at","be","been","than","also",
 ]);
 
+// Light inflectional stemmer: reduces common word forms to a shared root so a
+// single guess reveals its variants (plant/plants/planted/planting -> "plant").
+// Intentionally conservative — prefers missing a rare form over a false match.
+function stem(word: string): string {
+  let s = word.toLowerCase().replace(/[\u2019']/g, "'");
+  s = s.replace(/'s$|'$/g, ""); // possessives
+  const undouble = (b: string) =>
+    /([bcdfghjklmnpqrstvwxz])\1$/.test(b) ? b.slice(0, -1) : b;
+  if (s.length > 4 && s.endsWith("ies")) return s.slice(0, -3) + "y"; // berries -> berry
+  if (s.length > 5 && s.endsWith("ied")) return s.slice(0, -3) + "y";
+  if (s.length > 4 && s.endsWith("ing")) return undouble(s.slice(0, -3));
+  if (s.length > 3 && s.endsWith("ed")) return undouble(s.slice(0, -2));
+  if (s.length > 4 && s.endsWith("ly")) return s.slice(0, -2);
+  if (s.length > 4 && /(sses|shes|ches|xes|zes)$/.test(s)) return s.slice(0, -2); // glasses -> glass, boxes -> box
+  if (s.length > 3 && s.endsWith("s") && !s.endsWith("ss")) return s.slice(0, -1); // plants -> plant
+  return s;
+}
+
 type Token =
   | { kind: "word"; text: string; key: string; id: string }
   | { kind: "punct"; text: string; id: string };
@@ -55,6 +73,23 @@ export function Redactle({
     return f;
   }, [titleTokens, bodyTokens]);
 
+  // stem -> all article word-keys sharing that stem (so one guess reveals its forms)
+  const stemIndex = useMemo(() => {
+    const idx = new Map<string, string[]>();
+    for (const key of freq.keys()) {
+      const st = stem(key);
+      const arr = idx.get(st);
+      if (arr) arr.push(key);
+      else idx.set(st, [key]);
+    }
+    return idx;
+  }, [freq]);
+  const answerStem = useMemo(() => stem(answer), [answer]);
+
+  // total occurrences a guess reveals (itself + its word-forms)
+  const matchCount = (g: string) =>
+    (stemIndex.get(stem(g)) ?? []).reduce((sum, k) => sum + (freq.get(k) ?? 0), 0);
+
   const [revealed, setRevealed] = useState<Set<string>>(() => {
     if (initialSolved) return new Set(freq.keys());
     return new Set(STOPWORDS);
@@ -85,10 +120,15 @@ export function Redactle({
       return;
     }
     if (!guesses.includes(g)) setGuesses((prev) => [...prev, g]);
-    if (freq.has(g)) {
-      setRevealed((prev) => new Set(prev).add(g));
+    const keys = stemIndex.get(stem(g));
+    if (keys && keys.length) {
+      setRevealed((prev) => {
+        const next = new Set(prev);
+        for (const k of keys) next.add(k);
+        return next;
+      });
     }
-    if (g === answer) {
+    if (stem(g) === answerStem) {
       setRevealed(new Set(freq.keys()));
       setSolved(true);
       onSolved();
@@ -146,7 +186,7 @@ export function Redactle({
   const tableRows = useMemo(
     () =>
       guesses
-        .map((g, idx) => ({ word: g, count: freq.get(g) ?? 0, n: idx + 1 }))
+        .map((g, idx) => ({ word: g, count: matchCount(g), n: idx + 1 }))
         .reverse(),
     [guesses, freq],
   );

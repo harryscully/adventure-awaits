@@ -136,7 +136,11 @@ export const PUZZLE_LIST: PuzzleCfg[] = [
     title: "Tea",
     // [PLACEHOLDER]
     article:
-      "Tea is a fragrant drink brewed by pouring hot water over cured leaves of the plant Camellia sinensis. Originating in China thousands of years ago, tea spread along trade routes through Japan and India, eventually reaching Britain where it became a daily ritual. The leaves are processed in different ways to make black, green, oolong, and white varieties, each carrying its own colour and flavour. Today tea is the second most consumed beverage in the world after water, and a quiet afternoon cup with milk and a biscuit remains a small everyday comfort.",
+      `Tea is an aromatic beverage prepared by pouring hot or boiling water over cured or fresh leaves of Camellia sinensis, an evergreen shrub native to East Asia which originated in the borderlands of south-western China, north-east India and northern Myanmar. Tea is also made, but rarely, from the leaves of Camellia taliensis. After plain water, tea is the most widely consumed drink in the world. There are many types of tea; some have a cooling, slightly bitter, and astringent flavour, while others have profiles that include sweet, nutty, floral, or grassy notes. Tea has a stimulating effect in humans, primarily due to its caffeine content.
+
+An early credible record of tea drinking dates to the third century AD, in a medical text written by Chinese physician Hua Tuo. It was popularised as a recreational drink during the Chinese Tang dynasty, and tea drinking spread to other East Asian countries. Portuguese priests and merchants introduced it to Europe during the 16th century. During the 17th century, drinking tea became fashionable among the British, who later started to plant tea on a large scale in India, where it had previously been used only as a medicine.
+
+The term herbal tea refers to drinks not made from Camellia sinensis. They are the infusions of fruit, leaves, or other plant parts, such as steeps of rosehip, chamomile, or rooibos. These may be called tisanes or herbal infusions to prevent confusion with tea made from the tea plant.`,
   },
   {
     id: "hitchin",
@@ -156,7 +160,11 @@ export const PUZZLE_LIST: PuzzleCfg[] = [
     answer: "lavender",
     title: "Lavender",
     article:
-      "Lavender is a flowering plant in the mint family, known for its slender purple spikes and calming fragrance. Native to the Mediterranean, the Middle East, and parts of India, lavender has been cultivated for thousands of years for its oil, its scent, and its beauty. The Romans used lavender in their baths, and the name itself is often traced to a Latin verb meaning to wash. Today vast purple fields of lavender bloom across Provence in France, drawing visitors and photographers every summer. The plant thrives in poor, well-drained soil and full sun, which makes it popular in dry gardens. Bees and butterflies are strongly attracted to its flowers, and beekeepers prize the pale honey that results. Lavender oil is widely used in aromatherapy, soaps, and perfumes, and many people believe its scent helps with relaxation and sleep. The dried flowers keep their colour and fragrance for months, so they are often sewn into small bags and tucked among clothes. There are many species, but English lavender is the most common in gardens, valued for its hardiness and sweet smell. From cooking and baking to medicine and decoration, few plants are as versatile or as instantly recognisable as lavender.",
+      `Lavandula (common name lavender) is a genus of 47 known species of perennial flowering plants in the sage family, Lamiaceae. It is native to the Old World, primarily found across the drier, warmer regions of the Mediterranean, with an affinity for maritime breezes.
+
+Lavender is found on the Iberian Peninsula and around the entirety of the Mediterranean coastline (including the Adriatic coast, the Balkans, the Levant, and coastal North Africa), in parts of Eastern and Southern Africa and the Middle East, as well as in South Asia and on the Indian subcontinent.
+
+Many members of the genus are cultivated extensively in temperate climates as ornamental plants for garden and landscape use, for use as culinary herbs, and also commercially for the extraction of essential oils. Lavender is used in traditional medicine and as an ingredient in cosmetics.`,
   },
   {
     id: "field",
@@ -167,4 +175,4 @@ export const PUZZLE_LIST: PuzzleCfg[] = [
   },
 ];
 
-export const FINAL_ORDER = ["AFTERNOON", "TEA", "HITCHIN", "LAVENDER", "FIELD"] as const;
+export const FINAL_ORDER = ["AFTERNOON", "TEA", "@", "HITCHIN", "LAVENDER", "FIELD"] as const;
