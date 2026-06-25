@@ -9,7 +9,7 @@ export function IntroLetter({ onContinue }: Props) {
     <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
       <article className="paper-card max-w-lg w-full p-8 md:p-10 fade-up">
         <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase mb-4">
-          Toad &middot; today
+          Frog &middot; today
         </p>
         <div className="letter-serif text-lg md:text-xl text-ink leading-relaxed space-y-4">
           {COPY.introLetter.map((line, i) => (
@@ -22,7 +22,7 @@ export function IntroLetter({ onContinue }: Props) {
             onClick={onContinue}
             className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow hover:scale-105 transition-transform"
           >
-            Play today's games →
+            Open today's games →
           </button>
         </div>
       </article>

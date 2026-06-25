@@ -2,73 +2,105 @@ import { useCallback, useState } from "react";
 import { Envelope } from "./Envelope";
 import { Gate } from "./Gate";
 import { IntroLetter } from "./IntroLetter";
-import { SnailTransition } from "./SnailTransition";
+import { Menu } from "./Menu";
 import { Parseword } from "./Parseword";
 import { Redactle } from "./Redactle";
 import { Betweenle } from "./Betweenle";
+import { Ordering } from "./Ordering";
 import { DateLock } from "./DateLock";
 import { MapReveal } from "./MapReveal";
-import { ItineraryStrip } from "./ItineraryStrip";
-import { PUZZLES, STAGES, type Stage } from "@/lib/anniversary/constants";
+import { PUZZLE_LIST, type PuzzleCfg } from "@/lib/anniversary/constants";
+
+type View =
+  | "envelope"
+  | "gate"
+  | "intro"
+  | "menu"
+  | "puzzle"
+  | "ordering"
+  | "datelock"
+  | "reveal";
 
 export function Flow() {
-  const [stage, setStage] = useState<Stage>("envelope");
-  const [collected, setCollected] = useState<string[]>([]);
+  const [view, setView] = useState<View>("envelope");
+  const [activePuzzle, setActivePuzzle] = useState<PuzzleCfg | null>(null);
+  const [solved, setSolved] = useState<Record<string, boolean>>({});
 
-  const next = useCallback(() => {
-    setStage((s) => {
-      const i = STAGES.indexOf(s);
-      return STAGES[Math.min(i + 1, STAGES.length - 1)];
-    });
+  const openPuzzle = useCallback((p: PuzzleCfg) => {
+    setActivePuzzle(p);
+    setView("puzzle");
   }, []);
 
-  const collect = useCallback(
-    (word: string) => {
-      setCollected((prev) => (prev.includes(word) ? prev : [...prev, word]));
-      next();
-    },
-    [next],
-  );
+  const markSolved = useCallback((id: string) => {
+    setSolved((prev) => (prev[id] ? prev : { ...prev, [id]: true }));
+  }, []);
 
-  return (
-    <main className="min-h-[100svh] relative">
-      <ItineraryStrip collected={collected} />
+  const backToMenu = useCallback(() => {
+    setActivePuzzle(null);
+    setView("menu");
+  }, []);
 
-      {stage === "envelope" && <Envelope onSolved={next} />}
-      {stage === "gate" && <Gate onSolved={next} />}
-      {stage === "intro" && <IntroLetter onContinue={next} />}
+  if (view === "envelope") return <Envelope onSolved={() => setView("gate")} />;
+  if (view === "gate") return <Gate onSolved={() => setView("intro")} />;
+  if (view === "intro") return <IntroLetter onContinue={() => setView("menu")} />;
+  if (view === "menu")
+    return (
+      <Menu
+        solved={solved}
+        onOpen={openPuzzle}
+        onFinal={() => setView("ordering")}
+      />
+    );
+  if (view === "ordering")
+    return <Ordering onSolved={() => setView("datelock")} onBack={backToMenu} />;
+  if (view === "datelock") return <DateLock onSolved={() => setView("reveal")} />;
+  if (view === "reveal") return <MapReveal onReplay={() => setView("menu")} />;
 
-      {stage === "puzzle1" && (
+  // puzzle view
+  if (view === "puzzle" && activePuzzle) {
+    const p = activePuzzle;
+    const number = PUZZLE_LIST.findIndex((x) => x.id === p.id) + 1;
+    const initialSolved = !!solved[p.id];
+    const onSolved = () => markSolved(p.id);
+
+    if (p.type === "parseword") {
+      return (
         <Parseword
-          number={1}
-          clue={PUZZLES.parseword1.clue}
-          answer={PUZZLES.parseword1.answer}
-          definitionHint={PUZZLES.parseword1.definitionHint}
-          wordplayHint={PUZZLES.parseword1.wordplayHint}
-          onSolved={collect}
+          number={number}
+          clue={p.clue}
+          answer={p.answer}
+          definitionHint={p.definitionHint}
+          wordplayHint={p.wordplayHint}
+          initialSolved={initialSolved}
+          onSolved={onSolved}
+          onBack={backToMenu}
         />
-      )}
-      {stage === "snail1" && <SnailTransition onDone={next} />}
-
-      {stage === "puzzle2" && <Redactle onSolved={collect} />}
-      {stage === "snail2" && <SnailTransition onDone={next} />}
-
-      {stage === "puzzle3" && <Betweenle onSolved={collect} />}
-      {stage === "snail3" && <SnailTransition onDone={next} />}
-
-      {stage === "puzzle4" && (
-        <Parseword
-          number={4}
-          clue={PUZZLES.parseword2.clue}
-          answer={PUZZLES.parseword2.answer}
-          definitionHint={PUZZLES.parseword2.definitionHint}
-          wordplayHint={PUZZLES.parseword2.wordplayHint}
-          onSolved={collect}
+      );
+    }
+    if (p.type === "redactle") {
+      return (
+        <Redactle
+          number={number}
+          title={p.title}
+          article={p.article}
+          answer={p.answer}
+          initialSolved={initialSolved}
+          onSolved={onSolved}
+          onBack={backToMenu}
         />
-      )}
+      );
+    }
+    if (p.type === "betweenle") {
+      return (
+        <Betweenle
+          answer={p.answer}
+          initialSolved={initialSolved}
+          onSolved={onSolved}
+          onBack={backToMenu}
+        />
+      );
+    }
+  }
 
-      {stage === "datelock" && <DateLock onSolved={next} />}
-      {stage === "reveal" && <MapReveal />}
-    </main>
-  );
+  return null;
 }

@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { COPY } from "@/lib/anniversary/constants";
 
-export function MapReveal() {
+interface Props {
+  onReplay?: () => void;
+}
+
+export function MapReveal({ onReplay }: Props) {
   const mapEl = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<1 | 2>(1);
   const [pinsDropped, setPinsDropped] = useState(false);
@@ -175,7 +179,7 @@ export function MapReveal() {
 
           <article className="paper-card p-6 mt-4 text-center">
             <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase mb-3">
-              p.s. from Toad
+              p.s. from Frog
             </p>
             <div className="letter-serif text-lg text-ink space-y-2">
               {COPY.map.closing.map((l, i) => (
@@ -183,6 +187,15 @@ export function MapReveal() {
               ))}
             </div>
           </article>
+
+          {onReplay && (
+            <button
+              onClick={onReplay}
+              className="mx-auto block mt-2 px-6 py-2.5 rounded-full bg-secondary text-secondary-foreground border border-border font-medium shadow hover:scale-105 transition-transform"
+            >
+              ↺ {COPY.map.replay}
+            </button>
+          )}
         </div>
       )}
 
