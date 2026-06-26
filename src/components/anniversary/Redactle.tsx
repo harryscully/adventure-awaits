@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HintButton, type HintRung } from "./HintButton";
 import { BackToMenu } from "./BackToMenu";
 
@@ -101,6 +101,10 @@ export function Redactle({
   const [titleFirstLetter, setTitleFirstLetter] = useState(false);
   // ids of redaction boxes whose letter-count is currently shown
   const [counted, setCounted] = useState<Set<string>>(new Set());
+  // a guessed word the player tapped to locate in the article
+  const [focused, setFocused] = useState<string | null>(null);
+  const focusedStem = focused ? stem(focused) : null;
+  const firstFocusRef = useRef<HTMLSpanElement | null>(null);
 
   function toggleCount(id: string) {
     setCounted((prev) => {
@@ -115,6 +119,7 @@ export function Redactle({
     e.preventDefault();
     const g = guess.trim().toLowerCase();
     setGuess("");
+    setFocused(null);
     if (!g || !/^[a-z']+$/.test(g)) {
       setShake((n) => n + 1);
       return;
@@ -163,8 +168,15 @@ export function Redactle({
     if (t.kind === "punct") return <span key={t.id}>{t.text}</span>;
     const isRevealed = solved || revealed.has(t.key);
     if (isRevealed) {
+      const isFocus = focusedStem !== null && stem(t.key) === focusedStem;
       return (
-        <span key={t.id} className={isTitle ? "" : "text-ink"}>
+        <span
+          key={t.id}
+          ref={isFocus && t.id === firstFocusId ? firstFocusRef : undefined}
+          className={`${isTitle ? "" : "text-ink"} ${
+            isFocus ? "bg-amber-300 text-ink rounded-sm px-0.5 -mx-0.5" : ""
+          }`}
+        >
           {t.text}
         </span>
       );
@@ -190,6 +202,23 @@ export function Redactle({
         .reverse(),
     [guesses, freq],
   );
+
+  // id of the first revealed occurrence of the focused word (to scroll to)
+  const firstFocusId = useMemo(() => {
+    if (!focusedStem) return null;
+    for (const t of [...titleTokens, ...bodyTokens]) {
+      if (t.kind === "word" && revealed.has(t.key) && stem(t.key) === focusedStem) {
+        return t.id;
+      }
+    }
+    return null;
+  }, [focusedStem, titleTokens, bodyTokens, revealed]);
+
+  useEffect(() => {
+    if (focused && firstFocusRef.current) {
+      firstFocusRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [focused, firstFocusId]);
 
   const rungs: HintRung[] = [
     {
@@ -255,12 +284,12 @@ export function Redactle({
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
-              className={`typewriter flex-1 text-center text-lg py-3 px-4 rounded-md bg-background border-2 border-border focus:border-primary outline-none lowercase tracking-widest ${shake ? "animate-pulse" : ""}`}
+              className={`typewriter flex-1 min-w-0 text-center text-lg py-3 px-4 rounded-md bg-background border-2 border-border focus:border-primary outline-none lowercase tracking-widest ${shake ? "animate-pulse" : ""}`}
               key={shake}
             />
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow"
+              className="shrink-0 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow"
             >
               Guess
             </button>
@@ -275,16 +304,24 @@ export function Redactle({
               <span>matches</span>
             </div>
             <ul className="max-h-52 overflow-y-auto">
-              {tableRows.map((r) => (
-                <li
-                  key={r.word}
-                  className={`grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-1.5 text-base typewriter border-t border-border ${r.count === 0 ? "text-ink-soft/60" : "text-ink"}`}
-                >
-                  <span className="text-ink-soft">{r.n}</span>
-                  <span className="tracking-widest">{r.word}</span>
-                  <span className="font-semibold">{r.count}</span>
-                </li>
-              ))}
+              {tableRows.map((r) => {
+                const clickable = r.count > 0;
+                return (
+                  <li
+                    key={r.word}
+                    onClick={clickable ? () => setFocused((p) => (p === r.word ? null : r.word)) : undefined}
+                    className={`grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-1.5 text-base typewriter border-t border-border ${
+                      r.count === 0 ? "text-ink-soft/60" : "text-ink"
+                    } ${clickable ? "cursor-pointer hover:bg-secondary/60" : ""} ${
+                      focused === r.word ? "bg-amber-200" : ""
+                    }`}
+                  >
+                    <span className="text-ink-soft">{r.n}</span>
+                    <span className="tracking-widest">{r.word}</span>
+                    <span className="font-semibold">{r.count}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
