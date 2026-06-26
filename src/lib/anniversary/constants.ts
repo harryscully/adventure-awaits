@@ -15,9 +15,9 @@ export const COPY = {
     noVariants: ["No", "Nope", "Are you sure?", "Try again", "…fine, yes"],
   },
   introLetter: [
-    "Dearest Toad 🐸,",
+    "Dearest Toad,",
     "Four years! Can you believe it!",
-    "Before I tell you where we're going today, you have to do what we always do first - play today's games.",
+    "Before I tell you where we're going today, you have to do what we always do first - play today's quizzes.",
     "Don't worry, I've rigged them. Solve all five and you'll have the words to arrange the day.",
     "Yours, always ",
     "Frog 🐸",
@@ -58,6 +58,7 @@ export const COPY = {
       here is our day today, Toad.`,
     closing: [
       "Happy four years, my Toad.",
+      "I love you so much",
       "- Frog 🐸",
     ],
     replay: "View the puzzles again",

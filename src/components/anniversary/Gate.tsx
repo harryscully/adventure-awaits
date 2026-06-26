@@ -44,7 +44,7 @@ export function Gate({ onSolved }: Props) {
           {COPY.gate.question}
         </p>
 
-        <div className="mt-10 flex items-center justify-center gap-6 relative h-24">
+        <div className="mt-1 flex items-center justify-center gap-6 relative h-24">
           <button
             onClick={onSolved}
             className="px-7 py-3 rounded-full bg-primary text-primary-foreground font-medium shadow-lg hover:scale-105 transition-transform"

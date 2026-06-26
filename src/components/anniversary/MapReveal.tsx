@@ -204,10 +204,6 @@ export function MapReveal({ onViewPuzzles, onStartOver }: Props) {
           </div>
         </div>
       )}
-
-      <p className="typewriter text-[11px] tracking-widest text-ink-soft uppercase mt-8">
-        map · © openstreetmap contributors
-      </p>
     </div>
   );
 }
