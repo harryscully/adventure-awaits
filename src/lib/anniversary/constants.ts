@@ -12,7 +12,7 @@ export const COPY = {
     question: "Toad, will you go on a date with me today?",
     yes: "Yes",
     no: "No",
-    noVariants: ["No", "Nope", "Are you sure?", "Try again", "…fine, yes"],
+    noVariants: ["No", "Nope", "Are you sure?", "Try again", "helppp", "HOW MANY ARE THERE", "…fine, yes"],
   },
   introLetter: [
     "Dearest Toad,",
