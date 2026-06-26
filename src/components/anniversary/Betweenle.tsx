@@ -196,7 +196,7 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
       >
         {chars.map((ch, i) => {
           const base =
-            "typewriter w-11 h-12 sm:w-12 flex items-center justify-center text-xl font-semibold uppercase rounded-md border";
+            "typewriter w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-xl font-semibold uppercase rounded-md border";
           if (variant === "lower")
             return (
               <div key={i} className={`${base} bg-lavender/30 border-border text-ink/70`}>
@@ -225,7 +225,7 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh px-4 py-10">
+    <div className="flex flex-col items-center justify-center min-h-[100svh] px-4 py-10">
       <BackToMenu onBack={onBack} />
       <div className="paper-card max-w-md w-full p-6 sm:p-7 text-center fade-up">
         <p className="typewriter text-[10px] tracking-[0.3em] text-ink-soft uppercase">
@@ -240,13 +240,14 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
 
         {/* board: left rail (tags + dot) + three rows */}
         <div className="relative mt-6">
-          {/* left rail — tags + dot only appear after the first guess */}
-          <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col items-center">
-            {hasGuess && (
-              <div className="typewriter text-[11px] font-semibold text-ink bg-secondary rounded px-1.5 py-0.5 border border-border">
-                {topDist}
+          {/* left rail — distance tags (? until the first guess) + dot */}
+          <div className="absolute left-0 top-0 bottom-0 w-14 flex flex-col items-center">
+            <div className="relative">
+              <div className="typewriter text-sm font-bold text-ink bg-secondary border border-border rounded-lg min-w-9 px-1.5 h-8 flex items-center justify-center shadow-sm">
+                {hasGuess ? topDist : "?"}
               </div>
-            )}
+              <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-secondary border-r border-b border-border" />
+            </div>
             <div className="relative flex-1 w-px my-1 bg-border">
               {hasGuess && (
                 <div
@@ -255,15 +256,16 @@ export function Betweenle({ answer, initialSolved, onSolved, onBack }: Props) {
                 />
               )}
             </div>
-            {hasGuess && (
-              <div className="typewriter text-[11px] font-semibold text-ink bg-secondary rounded px-1.5 py-0.5 border border-border">
-                {bottomDist}
+            <div className="relative">
+              <div className="absolute left-1/2 -top-1 -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-secondary border-l border-t border-border" />
+              <div className="typewriter text-sm font-bold text-ink bg-secondary border border-border rounded-lg min-w-9 px-1.5 h-8 flex items-center justify-center shadow-sm">
+                {hasGuess ? bottomDist : "?"}
               </div>
-            )}
+            </div>
           </div>
 
           {/* rows */}
-          <div className="ml-12 flex flex-col gap-2.5">
+          <div className="ml-14 flex flex-col gap-2.5">
             <Row word={lowerWord} variant="lower" />
             <Row word={solved ? answer : ""} variant="input" />
             <Row word={upperWord} variant="upper" />
