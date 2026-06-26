@@ -169,8 +169,9 @@ export function Flow() {
           number={number}
           clue={p.clue}
           answer={p.answer}
-          definitionHint={p.definitionHint}
-          wordplayHint={p.wordplayHint}
+          definition={p.definition}
+          indicator={p.indicator}
+          fodder={p.fodder}
           initialSolved={initialSolved}
           onSolved={onSolved}
           onBack={backToMenu}

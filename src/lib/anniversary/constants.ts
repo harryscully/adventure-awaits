@@ -37,14 +37,14 @@ export const COPY = {
   ordering: {
     prompt: "Arrange the five words into the right order.",
     sub: "Tap the arrows to move tiles up or down.",
-    wrong: "Not quite — try again, Toad.",
+    wrong: "Not quite - try again, Toad.",
     submit: "Lock it in",
     revealed: "Afternoon Tea at Hitchin Lavender Fields 🫖",
   },
   dateLock: {
     prompt: "Frog needs the date it all started.",
     sub: "(day / month / year)",
-    nudge: "Not quite, my Toad. Try again — you know this one.",
+    nudge: "Not quite, my Toad. Try again!",
     answer: { day: 27, month: 6, year: 2022 },
   },
   map: {
@@ -75,7 +75,7 @@ export const COPY = {
       name: "Lussmans, Hertford",
       emoji: "🍽️",
       label: "Dinner",
-      time: "19:00",
+      time: "18:00",
       lat: 51.7956,
       lng: -0.0793,
     },
@@ -95,8 +95,9 @@ export type ParsewordCfg = {
   teaser: string;
   answer: string;
   clue: string;
-  definitionHint: string;
-  wordplayHint: string;
+  definition: string; // the part of the clue that defines the answer
+  indicator: string;  // the wordplay indicator (e.g. anagram signal)
+  fodder: string;     // the words to be transformed
 };
 
 export type RedactleCfg = {
@@ -126,10 +127,10 @@ export const PUZZLE_LIST: PuzzleCfg[] = [
     label: "Parseword #1",
     teaser: "a cryptic clue",
     answer: "AFTERNOON",
-    // [PLACEHOLDER] AFTER + NOON charade
-    clue: "Later than midday — a part of the day (9)",
-    definitionHint: "Definition: a part of the day.",
-    wordplayHint: "Wordplay: 'later than' (5) + 'midday' (4) = 9 letters.",
+    clue: "PM cooked non-fat roe (9)",
+    definition: "PM",
+    indicator: "cooked (anagram indicator)",
+    fodder: "non-fat roe",
   },
   {
     id: "tea",
@@ -152,9 +153,10 @@ The term herbal tea refers to drinks not made from Camellia sinensis. They are t
     label: "Parseword #2",
     teaser: "a cryptic clue",
     answer: "HITCHIN",
-    clue: "Strike the jaw of a Hertfordshire market town (7)",
-    definitionHint: "Definition: a Hertfordshire market town.",
-    wordplayHint: "Wordplay: a synonym for 'strike' (3) + a body part (4) = 7 letters.",
+    clue: "Portion of fish itch inside market town (7)",
+    definition: "market town",
+    indicator: "Portion of",
+    fodder: "fish itch inside",
   },
   {
     id: "lavender",
