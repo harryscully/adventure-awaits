@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Envelope } from "./Envelope";
 import { Gate } from "./Gate";
 import { IntroLetter } from "./IntroLetter";
@@ -71,7 +71,6 @@ export function Flow() {
         if (s.activeId) {
           setActivePuzzle(PUZZLE_LIST.find((x) => x.id === s.activeId) ?? null);
         }
-        // Don't resume mid-puzzle or mid-animation — fall back to the menu.
         let v: View = s.view ?? "envelope";
         if (v === "puzzle" || v === "snail") v = "menu";
         setView(v);
@@ -115,6 +114,15 @@ export function Flow() {
     setView(solvedCount > delivered ? "snail" : "menu");
   }, [solved, delivered]);
 
+  // Full reset — wipe progress and start again from the envelope.
+  const startOver = useCallback(() => {
+    setSolved({});
+    setDelivered(0);
+    setActivePuzzle(null);
+    setMenuOrder(shuffle(PUZZLE_LIST));
+    setView("envelope");
+  }, []);
+
   if (!hydrated) return null; // brief blank before restore; avoids SSR mismatch
 
   if (view === "envelope") return <Envelope onSolved={() => setView("gate")} />;
@@ -145,7 +153,8 @@ export function Flow() {
   if (view === "ordering")
     return <Ordering onSolved={() => setView("datelock")} onBack={() => setView("menu")} />;
   if (view === "datelock") return <DateLock onSolved={() => setView("reveal")} />;
-  if (view === "reveal") return <MapReveal onReplay={() => setView("menu")} />;
+  if (view === "reveal")
+    return <MapReveal onViewPuzzles={() => setView("menu")} onStartOver={startOver} />;
 
   // puzzle view
   if (view === "puzzle" && activePuzzle) {

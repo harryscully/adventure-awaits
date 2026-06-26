@@ -65,7 +65,7 @@ export function Ordering({ onSolved, onBack }: Props) {
   const full = placed.length === FINAL_ORDER.length;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-5 py-10">
+    <div className="flex flex-col items-center justify-center min-h-svh px-5 py-10">
       <BackToMenu onBack={onBack} />
       <div className="paper-card max-w-lg w-full p-7 text-center fade-up">
         <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase">
@@ -80,7 +80,7 @@ export function Ordering({ onSolved, onBack }: Props) {
 
         {/* phrase box */}
         <div
-          className={`mt-6 min-h-[88px] rounded-xl border-2 border-dashed p-3 flex flex-wrap gap-2 items-center justify-center transition-colors ${
+          className={`mt-6 min-h-22 rounded-xl border-2 border-dashed p-3 flex flex-wrap gap-2 items-center justify-center transition-colors ${
             solved ? "border-primary bg-primary/10" : "border-border bg-background/60"
           }`}
         >
@@ -114,8 +114,8 @@ export function Ordering({ onSolved, onBack }: Props) {
         </div>
 
         {/* word bank */}
-        {!solved && (
-          <div className="mt-4 flex flex-wrap gap-2 justify-center min-h-[52px]">
+        {!solved && bank.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2 justify-center">
             {bank.map((word) => (
               <button
                 key={word}

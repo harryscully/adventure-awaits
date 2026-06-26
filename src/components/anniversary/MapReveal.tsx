@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { COPY } from "@/lib/anniversary/constants";
 
 interface Props {
-  onReplay?: () => void;
+  onViewPuzzles?: () => void;
+  onStartOver?: () => void;
 }
 
-export function MapReveal({ onReplay }: Props) {
+export function MapReveal({ onViewPuzzles, onStartOver }: Props) {
   const mapEl = useRef<HTMLDivElement>(null);
   const [stage, setStage] = useState<1 | 2>(1);
   const [pinsDropped, setPinsDropped] = useState(false);
@@ -183,14 +184,24 @@ export function MapReveal({ onReplay }: Props) {
             </div>
           </article>
 
-          {onReplay && (
-            <button
-              onClick={onReplay}
-              className="mx-auto block mt-2 px-6 py-2.5 rounded-full bg-secondary text-secondary-foreground border border-border font-medium shadow hover:scale-105 transition-transform"
-            >
-              ↺ {COPY.map.replay}
-            </button>
-          )}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-2">
+            {onViewPuzzles && (
+              <button
+                onClick={onViewPuzzles}
+                className="px-6 py-2.5 rounded-full bg-secondary text-secondary-foreground border border-border font-medium shadow hover:scale-105 transition-transform"
+              >
+                🧩 View puzzles again
+              </button>
+            )}
+            {onStartOver && (
+              <button
+                onClick={onStartOver}
+                className="px-6 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow hover:scale-105 transition-transform"
+              >
+                ↺ Back to the start
+              </button>
+            )}
+          </div>
         </div>
       )}
 
