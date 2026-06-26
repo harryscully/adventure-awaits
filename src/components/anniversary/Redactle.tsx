@@ -156,7 +156,7 @@ export function Redactle({
         tabIndex={0}
         onClick={() => toggleCount(id)}
         title="click to show letters"
-        className="inline-flex items-center justify-start align-middle h-[1.4em] rounded-[2px] bg-ink/85 text-paper text-[0.78em] font-bold leading-none cursor-pointer select-none mx-px px-1 hover:bg-ink transition-colors"
+        className="inline-flex items-center justify-start align-middle h-[1.4em] rounded-[2px] bg-ink/85 text-paper text-[0.78em] font-bold leading-none cursor-pointer select-none mx-[1px] px-1 hover:bg-ink transition-colors"
         style={{ minWidth: `${Math.max(1, len * 0.62)}em` }}
       >
         {show ? len : ""}
@@ -254,9 +254,10 @@ export function Redactle({
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh px-4 py-10">
+    <div className="min-h-[100svh] flex flex-col">
       <BackToMenu onBack={onBack} />
-      <div className="paper-card max-w-2xl w-full p-6 sm:p-8 fade-up">
+      <div className="flex-1 px-4 pt-12 pb-4">
+        <div className="paper-card max-w-2xl mx-auto w-full p-6 sm:p-8 fade-up">
         <p className="typewriter text-xs tracking-[0.3em] text-ink-soft uppercase text-center">
           today's games · #{number}
         </p>
@@ -275,57 +276,6 @@ export function Redactle({
           {bodyTokens.map((t) => renderToken(t))}
         </p>
 
-        {!solved && (
-          <form onSubmit={submit} className="mt-6 flex gap-2">
-            <input
-              value={guess}
-              onChange={(e) => setGuess(e.target.value)}
-              placeholder="enter a word"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              className={`typewriter flex-1 min-w-0 text-center text-lg py-3 px-4 rounded-md bg-background border-2 border-border focus:border-primary outline-none lowercase tracking-widest ${shake ? "animate-pulse" : ""}`}
-              key={shake}
-            />
-            <button
-              type="submit"
-              className="shrink-0 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow"
-            >
-              Guess
-            </button>
-          </form>
-        )}
-
-        {!solved && tableRows.length > 0 && (
-          <div className="mt-5 border border-border rounded-md overflow-hidden">
-            <div className="grid grid-cols-[auto_1fr_auto] gap-3 typewriter text-xs tracking-widest text-ink-soft uppercase bg-secondary px-3 py-1.5">
-              <span>#</span>
-              <span>guess</span>
-              <span>matches</span>
-            </div>
-            <ul className="max-h-52 overflow-y-auto">
-              {tableRows.map((r) => {
-                const clickable = r.count > 0;
-                return (
-                  <li
-                    key={r.word}
-                    onClick={clickable ? () => setFocused((p) => (p === r.word ? null : r.word)) : undefined}
-                    className={`grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-1.5 text-base typewriter border-t border-border ${
-                      r.count === 0 ? "text-ink-soft/60" : "text-ink"
-                    } ${clickable ? "cursor-pointer hover:bg-secondary/60" : ""} ${
-                      focused === r.word ? "bg-amber-200" : ""
-                    }`}
-                  >
-                    <span className="text-ink-soft">{r.n}</span>
-                    <span className="tracking-widest">{r.word}</span>
-                    <span className="font-semibold">{r.count}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-
         {solved && (
           <p className="mt-4 text-center hand text-2xl text-primary">
             🎉 {answer.toUpperCase()}!
@@ -342,7 +292,64 @@ export function Redactle({
             }}
           />
         )}
+        </div>
       </div>
+
+      {/* pinned footer — input + previous guesses stay visible */}
+      {!solved && (
+        <div className="sticky bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.25)]">
+          <div className="max-w-2xl mx-auto w-full px-4 py-3">
+            {tableRows.length > 0 && (
+              <div className="mb-2 border border-border rounded-md overflow-hidden">
+                <div className="grid grid-cols-[auto_1fr_auto] gap-3 typewriter text-[11px] tracking-widest text-ink-soft uppercase bg-secondary px-3 py-1">
+                  <span>#</span>
+                  <span>guess</span>
+                  <span>matches</span>
+                </div>
+                <ul className="max-h-28 overflow-y-auto">
+                  {tableRows.map((r) => {
+                    const clickable = r.count > 0;
+                    return (
+                      <li
+                        key={r.word}
+                        onClick={clickable ? () => setFocused((p) => (p === r.word ? null : r.word)) : undefined}
+                        className={`grid grid-cols-[auto_1fr_auto] gap-3 px-3 py-1 text-sm typewriter border-t border-border ${
+                          r.count === 0 ? "text-ink-soft/60" : "text-ink"
+                        } ${clickable ? "cursor-pointer hover:bg-secondary/60" : ""} ${
+                          focused === r.word ? "bg-amber-200" : ""
+                        }`}
+                      >
+                        <span className="text-ink-soft">{r.n}</span>
+                        <span className="tracking-widest">{r.word}</span>
+                        <span className="font-semibold">{r.count}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <form onSubmit={submit} className="flex gap-2">
+              <input
+                value={guess}
+                onChange={(e) => setGuess(e.target.value)}
+                placeholder="enter a word"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className={`typewriter flex-1 min-w-0 text-center text-lg py-3 px-4 rounded-md bg-background border-2 border-border focus:border-primary outline-none lowercase tracking-widest ${shake ? "animate-pulse" : ""}`}
+                key={shake}
+              />
+              <button
+                type="submit"
+                className="shrink-0 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium shadow"
+              >
+                Guess
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
